@@ -1,0 +1,4 @@
+from uv_dep_up.main import main
+
+if __name__ == "__main__":
+    main()

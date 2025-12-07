@@ -1,0 +1,157 @@
+[project]
+name = "uv-dep-up"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "alirex", email = "alirex.prime@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "tomlkit>=0.13.3",
+    "typer>=0.20.0",
+]
+
+[dependency-groups]
+dev = [
+    # [typing]-[BEGIN]
+    # Static type checker
+    "mypy>=1.18.2",
+    # [typing]-[END]
+    # [testing]-[BEGIN]
+    "pytest>=9.0.1",
+    "pytest-benchmark>=5.2.1",
+    # [testing]-[END]
+    # Extra checker. Used by Zed.
+    "basedpyright>=1.33.0",
+    # Task runner
+    "poethepoet>=0.38.0",
+    # Dead code checker
+    "vulture>=2.14",
+    # Code complexity checker
+    "radon>=6.0.1",
+]
+
+[project.scripts]
+uv-dep-up = "uv_dep_up:main"
+
+[build-system]
+requires = ["uv_build>=0.9.15,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.poe.tasks]
+pca= [
+    {cmd = "prek run --all-files"},
+]
+
+# Run with: poe metrics or uv run poe metrics
+# Check code quality: dead code, complexity, and maintainability
+metrics = [
+    {cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests"},
+    {cmd = "radon cc . -a -nb"},
+    {cmd = "radon mi . -nb"}
+]
+
+# Run with: poe quality or uv run poe quality
+# Full quality check: format, lint, type check, and metrics
+quality = [
+    {cmd = "ruff format ."},
+    {cmd = "ruff check . --fix"},
+    {cmd = "basedpyright --level error"},
+    {cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests"},
+    {cmd = "radon cc . -a -nb"}
+]
+
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+
+[tool.mypy]
+plugins = [
+    "pydantic.mypy",
+]
+
+strict = true
+
+[tool.ruff]
+line-length = 120
+fix = true
+unsafe-fixes = true
+show-fixes = true
+
+extend-exclude = [
+]
+
+[tool.ruff.lint]
+extend-select = [
+    "ALL",
+]
+extend-ignore = [
+    # Missing docstring.
+    "D1",
+    # flake8-future-annotations.
+    "FA",
+    # Missing type annotation for self and cls.
+    "ANN1",
+    # f-strings to format logging messages.
+    "G004",
+    # Consider {expression} instead of string join.
+    "FLY002",
+    # TODOs
+    # Author.
+    "TD002",
+    # Link to issue
+    "TD003",
+    # Line contains a TODO or related comment
+    "FIX",
+    # Args and kwargs are not used and not annotated
+    "ANN002",
+    "ANN003",
+    # Commented code
+    "ERA001",
+    # empty-comment
+    "PLR2044",
+    #
+    #
+    # print used.
+    "T201",
+]
+
+task-tags = [
+    "TODO",
+    "FIXME",
+    "HACK",
+    "XXX",
+    "[",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+# https://betterprogramming.pub/3-different-docstring-formats-for-python-d27be81e0d68
+
+[tool.ruff.lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = [
+    # Unused import.
+    "F401",
+]
+
+"test_*.py" = [
+    # Allow `assert` statements in tests.
+    "S101",
+]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+]
+runtime-evaluated-decorators = [
+    "pydantic.validate_call",
+    "app.command",
+]
+
+[tool.basedpyright]
+typeCheckingMode = "strict"
