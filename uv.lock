@@ -457,11 +457,11 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "basedpyright", specifier = ">=1.33.0" },
-    { name = "mypy", specifier = ">=1.18.2" },
+    { name = "basedpyright", specifier = ">=1.35.0" },
+    { name = "mypy", specifier = ">=1.19.0" },
     { name = "poethepoet", specifier = ">=0.38.0" },
-    { name = "pytest", specifier = ">=9.0.1" },
-    { name = "pytest-benchmark", specifier = ">=5.2.1" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-benchmark", specifier = ">=5.2.3" },
     { name = "radon", specifier = ">=6.0.1" },
     { name = "vulture", specifier = ">=2.14" },
 ]
