@@ -3,8 +3,8 @@ from typing import Annotated
 
 import typer
 
-from uv_dep_up.services.normalize_and_check_path_to_pyproject import normalize_and_check_path_to_pyproject
-from uv_dep_up.services.run_updater import run_updater
+from uv_upgrade.services.normalize_and_check_path_to_pyproject import normalize_and_check_path_to_pyproject
+from uv_upgrade.services.run_updater import run_updater
 
 app = typer.Typer(
     pretty_exceptions_enable=False,

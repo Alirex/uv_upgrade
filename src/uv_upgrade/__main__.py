@@ -1,4 +1,4 @@
-from uv_dep_up.main import main
+from uv_upgrade.main import main
 
 if __name__ == "__main__":
     main()

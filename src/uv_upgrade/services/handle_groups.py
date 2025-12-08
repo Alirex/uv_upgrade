@@ -1,12 +1,12 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
-from uv_dep_up.services.update_dependencies import update_dependencies
+from uv_upgrade.services.update_dependencies import update_dependencies
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
 
-    from uv_dep_up.services.get_deps_by_venv import DependenciesRegistry
+    from uv_upgrade.services.get_deps_by_venv import DependenciesRegistry
 
 
 def handle_main_dependency_group(
