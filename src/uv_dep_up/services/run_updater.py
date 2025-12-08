@@ -1,9 +1,10 @@
+import copy
 import logging
 from typing import TYPE_CHECKING
 
 from uv_dep_up.services.get_deps_by_venv import get_deps_by_venv
 from uv_dep_up.services.handle_groups import handle_dependency_groups, handle_main_dependency_group
-from uv_dep_up.services.run_uv_lock import run_uv_lock
+from uv_dep_up.services.run_uv_lock import UnresolvedDependencyError, run_uv_lock
 from uv_dep_up.services.save_load_toml import load_toml, save_toml
 
 if TYPE_CHECKING:
@@ -19,6 +20,8 @@ def run_updater(
     logger = logging.getLogger(__name__)
 
     data = load_toml(path_to_pyproject)
+
+    data_source_copy = copy.deepcopy(data)
 
     new_deps = get_deps_by_venv(workdir=path_to_pyproject.parent)
 
@@ -54,5 +57,9 @@ def run_updater(
     save_toml(path_to_pyproject, data)
     logger.info(f"Wrote updated dependencies to {path_to_pyproject.as_uri()}")
 
-    run_uv_lock(workdir=path_to_pyproject.parent)
-    logger.info("Updated dependencies successfully.")
+    try:
+        run_uv_lock(workdir=path_to_pyproject.parent)
+        logger.info("Updated dependencies successfully.")
+    except UnresolvedDependencyError:
+        logger.error("Failed to update dependencies. Rolling back to previous state.")  # noqa: TRY400
+        save_toml(path_to_pyproject, data_source_copy)
