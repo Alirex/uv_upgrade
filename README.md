@@ -1,6 +1,6 @@
-# Uv dev Up
+# Uv upgrade
 
-Updater for the uv dependencies.
+Upgrade dependencies in `pyproject.toml` with `uv`.
 
 ---
 
@@ -143,9 +143,9 @@ It uses type annotations anyway. For simpler migration.
 
 ---
 
-## Dev
+# Dev
 
-### Uv install or update
+## Uv install or update
 
 https://docs.astral.sh/uv/getting-started/installation/
 
@@ -159,7 +159,7 @@ fi
 uv --version
 ```
 
-### Ruff install or update
+## Ruff install or update
 
 https://docs.astral.sh/ruff/installation/
 
@@ -173,7 +173,7 @@ fi
 ruff --version
 ```
 
-### Install prek for pre-commit hooks
+## Install prek for pre-commit hooks
 
 Needed for automatic linting.
 
@@ -190,13 +190,13 @@ prek --version
 
 Note: Run with self-update for installing the latest version of prek. Maybe they will provide a better script later.
 
-### Create venv
+## Create venv
 
 ```bash
 uv sync --all-packages
 ```
 
-### Register pre-commit hooks
+## Register pre-commit hooks
 
 Make this after cloning the repository.
 
@@ -214,7 +214,7 @@ Make this each time after cloning the repository.
 
 Don't need to do it after changing the hooks, commit or pull.
 
-### Run pre-commit hooks
+## Run pre-commit hooks
 
 If needed, run them manually.
 
@@ -224,7 +224,7 @@ prek run --all-files
 
 Useful after changing the hooks. Or just to check if everything is fine.
 
-### Install app system-wide in Development mode
+## Install app system-wide in Development mode
 
 For system-wide usage during development, run this command from the repository directory:
 
