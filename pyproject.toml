@@ -17,14 +17,14 @@ dependencies = [
 dev = [
     # [typing]-[BEGIN]
     # Static type checker
-    "mypy>=1.18.2",
+    "mypy>=1.19.0",
     # [typing]-[END]
     # [testing]-[BEGIN]
-    "pytest>=9.0.1",
-    "pytest-benchmark>=5.2.1",
+    "pytest>=9.0.2",
+    "pytest-benchmark>=5.2.3",
     # [testing]-[END]
     # Extra checker. Used by Zed.
-    "basedpyright>=1.33.0",
+    "basedpyright>=1.35.0",
     # Task runner
     "poethepoet>=0.38.0",
     # Dead code checker
