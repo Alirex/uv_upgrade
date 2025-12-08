@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from uv_dep_up.services.get_deps_by_venv import DependencyName
+from uv_upgrade.services.get_deps_by_venv import DependencyName
 
 
 class VersionConstraint(BaseModel):

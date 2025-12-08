@@ -1,5 +1,5 @@
 from logging_custom.init_logging import init_logging
-from uv_dep_up.cli.main import app
+from uv_upgrade.cli.main import app
 
 
 def main() -> None:

@@ -2,10 +2,10 @@ import copy
 import logging
 from typing import TYPE_CHECKING
 
-from uv_dep_up.services.get_deps_by_venv import get_deps_by_venv
-from uv_dep_up.services.handle_groups import handle_dependency_groups, handle_main_dependency_group
-from uv_dep_up.services.run_uv_lock import UnresolvedDependencyError, run_uv_lock
-from uv_dep_up.services.save_load_toml import load_toml, save_toml
+from uv_upgrade.services.get_deps_by_venv import get_deps_by_venv
+from uv_upgrade.services.handle_groups import handle_dependency_groups, handle_main_dependency_group
+from uv_upgrade.services.run_uv_lock import UnresolvedDependencyError, run_uv_lock, run_uv_sync
+from uv_upgrade.services.save_load_toml import load_toml, save_toml
 
 if TYPE_CHECKING:
     import pathlib
@@ -63,3 +63,6 @@ def run_updater(
     except UnresolvedDependencyError:
         logger.error("Failed to update dependencies. Rolling back to previous state.")  # noqa: TRY400
         save_toml(path_to_pyproject, data_source_copy)
+
+    run_uv_sync(workdir=path_to_pyproject.parent)
+    logger.info("Synced dependencies successfully.")

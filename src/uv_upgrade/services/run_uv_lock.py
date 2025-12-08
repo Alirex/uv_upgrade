@@ -21,3 +21,11 @@ def run_uv_lock(workdir: pathlib.Path) -> None:
         raise UnresolvedDependencyError(
             msg,
         ) from e
+
+
+def run_uv_sync(workdir: pathlib.Path) -> None:
+    subprocess.run(
+        ["uv", "sync"],  # noqa: S607
+        check=True,
+        cwd=workdir,
+    )

@@ -1,5 +1,5 @@
-from uv_dep_up.models.dependency_parsed import DependencyParsed, VersionConstraint
-from uv_dep_up.services.get_deps_by_venv import DependencyName
+from uv_upgrade.models.dependency_parsed import DependencyParsed, VersionConstraint
+from uv_upgrade.services.get_deps_by_venv import DependencyName
 
 
 def parse_dependency(  # noqa: C901, PLR0912, PLR0915
