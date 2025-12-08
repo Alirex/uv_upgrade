@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="uv (uv_dep_up)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="uv (uv_dep_up)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="uv (uv_upgrade)" project-jdk-type="Python SDK" />
 </project>
