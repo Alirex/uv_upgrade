@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/uv_dep_up.iml" filepath="$PROJECT_DIR$/.idea/uv_dep_up.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/uv_upgrade.iml" filepath="$PROJECT_DIR$/.idea/uv_upgrade.iml" />
     </modules>
   </component>
 </project>
