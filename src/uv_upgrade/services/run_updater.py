@@ -3,7 +3,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from uv_upgrade.services.get_all_pyprojects import get_all_pyprojects
-from uv_upgrade.services.get_deps_by_venv import get_deps_from_project
+from uv_upgrade.services.get_deps_from_project import get_deps_from_project
 from uv_upgrade.services.handle_groups import handle_py_projects
 from uv_upgrade.services.normalize_and_check_path_to_pyproject import (
     get_and_check_path_to_uv_lock,
