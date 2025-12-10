@@ -1,6 +1,10 @@
+import copy
 import logging
 from typing import TYPE_CHECKING
 
+from pydantic import BaseModel
+
+from uv_upgrade.models.dependency_parsed import DependencyParsed
 from uv_upgrade.services.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
@@ -9,24 +13,31 @@ if TYPE_CHECKING:
 type IncludedDependencyGroup = dict[str, str]
 
 
+class ChangesItem(BaseModel):
+    from_item: DependencyParsed
+    to_item: DependencyParsed
+
+    def __str__(self) -> str:
+        return f"{self.from_item.get_full_spec()} -> {self.to_item.get_full_spec()}"
+
+
+type ChangesList = list[ChangesItem]
+
+
 def update_dependencies(  # noqa: C901, PLR0912
     *,
     deps_sequence_from_config: list[str] | list[str | IncludedDependencyGroup],
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
-) -> bool:
+) -> ChangesList:
     """Update the list of dependencies.
 
     Update it in-place.
     Because we want to preserve the comments.
-
-    Returns:
-        True if there are changes, False otherwise.
     """
     logger = logging.getLogger(__name__)
 
-    is_any_changed = False
-
+    changes: ChangesList = []
     for _index, dep in enumerate(deps_sequence_from_config):
         if verbose:
             logger.info(f"Parsing dependency: {dep}")
@@ -46,6 +57,8 @@ def update_dependencies(  # noqa: C901, PLR0912
             version_new = dependencies_registry[parsed.dependency_name]
         except KeyError:
             continue
+
+        parsed_original = copy.deepcopy(parsed)
 
         if len(parsed.version_constraints) > 2:  # noqa: PLR2004
             msg = f"Multiple version constraints are not supported yet. Skip. Dependency: {dep}"
@@ -76,6 +89,6 @@ def update_dependencies(  # noqa: C901, PLR0912
             version_constraint.version = version_new
 
             deps_sequence_from_config[_index] = parsed.get_full_spec()
-            is_any_changed = True
+            changes.append(ChangesItem(from_item=parsed_original, to_item=parsed))
 
-    return is_any_changed
+    return changes
