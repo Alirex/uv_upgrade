@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 from uv_upgrade.services.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
-    from uv_upgrade.services.get_deps_by_venv import DependenciesRegistry
+    from uv_upgrade.services.get_deps_from_project import DependenciesRegistry
 
 type IncludedDependencyGroup = dict[str, str]
 
+
 def update_dependencies(  # noqa: C901, PLR0912
     *,
-    deps_sequence_from_config: list[str]|list[str | IncludedDependencyGroup],
+    deps_sequence_from_config: list[str] | list[str | IncludedDependencyGroup],
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
 ) -> bool:
