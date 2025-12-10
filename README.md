@@ -117,7 +117,7 @@ It respects simple dependency ranges. Like `bla>=1.0.0,<2.0.0`.
 
 It moves the lower bound to the new version.
 
-In fact, it handles any part of the constraint with supported operator.
+In fact, it handles any part of the constraint with a supported operator.
 
 ### Respect extras
 
@@ -127,7 +127,7 @@ It respects extras. Like `bla[dev]>=1.0.0;python_version>="3.14"`.
 
 It skips unhandled and complex constraints. Like:
 
-- `bla<=1.0.0`
+- `bla<1.0.0`
 
 ### Style preservation
 
@@ -147,6 +147,10 @@ dependencies = [
 ### Rollback
 
 If something goes wrong, it rolls back the changes to the `pyproject.toml` and `uv.lock` files.
+
+### Rollback on no-changes
+
+If nothing from pyproject.toml was changed, it rolls back the changes to the `uv.lock` file.
 
 ### Why?
 
