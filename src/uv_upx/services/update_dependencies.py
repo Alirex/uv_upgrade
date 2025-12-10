@@ -23,9 +23,28 @@ class ChangesItem(BaseModel):
 
 type ChangesList = list[ChangesItem]
 
+# https://peps.python.org/pep-0440/#version-specifiers
+
 VERSION_OPERATORS_I_PUT_IF_DIFFERENT: Final[set[str]] = {">="}
 
-VERSION_OPERATORS_I_EXPLICIT_IGNORE: Final[set[str]] = {"=="}
+VERSION_OPERATORS_I_EXPLICIT_IGNORE: Final[set[str]] = {
+    # Pinned versions
+    "==",
+    "===",
+    #
+    # Upper bounds
+    "<",
+    "<=",
+    #
+    # May needed advanced logic here
+    "~=",
+    #
+    # Need to calculate a previous version. Skip for now.
+    ">",
+    #
+    # Special case
+    "!=",
+}
 
 
 def update_dependencies(  # noqa: C901, PLR0912
@@ -59,10 +78,11 @@ def update_dependencies(  # noqa: C901, PLR0912
 
         try:
             version_new = dependencies_registry[parsed.dependency_name]
-        except KeyError as e:
+        except KeyError:
             # Note: raise error, because it now we have all the dependencies in the registry.
             msg = f"Dependency not found in the registry: {parsed.dependency_name}"
-            raise ValueError(msg) from e
+            logger.error(msg)  # noqa: TRY400
+            continue
 
         parsed_original = copy.deepcopy(parsed)
 

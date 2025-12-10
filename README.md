@@ -32,9 +32,11 @@ uv --version
 
 Run it from any directory, except the project directory.
 
+This will install or upgrade the tool.
+
 ```shell
-if ! command -v uv-upgrade &> /dev/null; then
-    uv tool install git+https://github.com/Alirex/uv_upgrade
+if ! command -v uv-upx &> /dev/null; then
+    uv tool install uv-upx
 else
     uv tool upgrade uv-upx
 fi
@@ -96,15 +98,26 @@ It works with workspaces. At least for some basic cases.
 
 Updates `>=` dependencies. Like `bla>=2.0.0`.
 
-### Skip pinned versions
+Because, in this case, we can simply put the new version instead of the old one.
+
+Update the similar part of the constraint in the multi-constraint.
+
+### Skip pinned versions and upper bounds
 
 It doesn't touch pinned versions. Like `bla==2.0.0`.
 
-### Respect simple ranges
+It doesn't touch lower bounds. Like:
+
+- `bla<=2.0.0`
+- `bla~=2.0.0`
+
+### Respect simple ranges and some combined constraints
 
 It respects simple dependency ranges. Like `bla>=1.0.0,<2.0.0`.
 
 It moves the lower bound to the new version.
+
+In fact, it handles any part of the constraint with supported operator.
 
 ### Respect extras
 
@@ -115,7 +128,6 @@ It respects extras. Like `bla[dev]>=1.0.0;python_version>="3.14"`.
 It skips unhandled and complex constraints. Like:
 
 - `bla<=1.0.0`
-- `bla>=2.0.0,!=1.5.0,<3.0.0`
 
 ### Style preservation
 
@@ -143,7 +155,7 @@ I needed this for my own projects.
 I know these issues:
 
 - [Upgrade dependencies in pyproject.toml (uv upgrade)](https://github.com/astral-sh/uv/issues/6692)
-- [What is the intended workflow for updating dependencies with uv?](ttps://github.com/astral-sh/uv/issues/6794)
+- [What is the intended workflow for updating dependencies with uv?](https://github.com/astral-sh/uv/issues/6794)
 
 But I didn't see enough progress.
 
