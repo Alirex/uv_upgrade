@@ -84,3 +84,11 @@ repos:
         types: [python]
         # hook will execute using a single process instead of in parallel
         require_serial: true
+
+      - id: app-check
+        #
+        name: app-check
+        entry: uv run uv-upgrade --help
+        language: system
+        # hook will execute using a single process instead of in parallel
+        require_serial: true
