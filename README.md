@@ -72,15 +72,31 @@ Also, you can run it with the `--help` flag with more details.
 
 ## Notes
 
+### Uv as a source of truth
+
+Run `uv sync --all-groups --all-extras --all-packages --upgrade`.
+
+Get dependencies versions from `uv.lock`.
+
+Put them in `pyproject.toml` files.
+
+### Workspace support
+
+It works with workspaces. At least for some basic cases.
+
 ### Dependencies constraints
 
 Now it handles only relatively simple cases.
 
 So, it updates only `>=` dependencies.
 
-Other dependencies constraints are skipped. Like:
+This includes:
 
+- single versions (`>=1.0.0`)
 - ranges (`>=1.0.0, <2.0.0`)
+  - Move lower bound to the new version.
+
+Some dependencies constraints are skipped. Because i don't meet them yet.
 
 Some are skipped by design (for now). Like:
 
@@ -105,13 +121,7 @@ dependencies = [
 
 ### Rollback
 
-It changes the `pyproject.toml`.
-
-Then run `uv lock` to update the lock file.
-
-During the update, `uv` resolves the dependencies.
-
-If something goes wrong, it rolls back the changes to the `pyproject.toml`.
+If something goes wrong, it rolls back the changes to the `pyproject.toml` and `uv.lock` files.
 
 ### Why?
 
