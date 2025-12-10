@@ -66,39 +66,27 @@ def update_dependencies(  # noqa: C901, PLR0912
 
         parsed_original = copy.deepcopy(parsed)
 
-        if len(parsed.version_constraints) > 2:  # noqa: PLR2004
-            msg = f"Multiple version constraints are not supported yet. Skip. Dependency: {dep}"
-            if verbose:
-                logger.warning(msg)
+        is_has_changes = False
+        for version_constraint in parsed.version_constraints:
+            if version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT:
+                # TODO: (?) Implement better version comparison logic here
+                if version_new != version_constraint.version:
+                    version_constraint.version = version_new
+                    is_has_changes = True
 
-            continue
+            elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
+                if verbose:
+                    msg = f"Explicitly ignoring version constraint {version_constraint}. Dependency: {dep}"
+                    logger.info(msg)
+            else:
+                if verbose:
+                    msg = f"Operator {version_constraint.operator} is not supported yet. Skip. Dependency: {dep}"
+                    logger.warning(msg)
 
-        if len(parsed.version_constraints) == 0:
-            msg = f"No version constraints found. Skip. Dependency: {dep}"
-            if verbose:
-                logger.warning(msg)
+                continue
 
-            continue
-
-        # Next work both for 1 and 2 version constraints
-
-        version_constraint = parsed.version_constraints[0]
-        if version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT:
-            # TODO: (?) Implement better version comparison logic here
-            if version_new != version_constraint.version:
-                version_constraint.version = version_new
-
-                deps_sequence_from_config[_index] = parsed.get_full_spec()
-                changes.append(ChangesItem(from_item=parsed_original, to_item=parsed))
-        elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
-            if verbose:
-                msg = f"Explicitly ignoring version constraint {version_constraint}. Dependency: {dep}"
-                logger.info(msg)
-        else:
-            if verbose:
-                msg = f"Operator {version_constraint.operator} is not supported yet. Skip. Dependency: {dep}"
-                logger.warning(msg)
-
-            continue
+        if is_has_changes:
+            deps_sequence_from_config[_index] = parsed.get_full_spec()
+            changes.append(ChangesItem(from_item=parsed_original, to_item=parsed))
 
     return changes
