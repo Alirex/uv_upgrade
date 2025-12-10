@@ -27,7 +27,7 @@ dev = [
     "pytest-benchmark>=5.2.3",
     # [testing]-[END]
     # Extra checker. Used by Zed.
-    "basedpyright>=1.35.0",
+    "basedpyright>=1.36.0",
     # Task runner
     "poethepoet>=0.38.0",
     # Dead code checker
