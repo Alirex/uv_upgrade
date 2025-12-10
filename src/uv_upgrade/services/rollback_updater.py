@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from uv_upgrade.services.run_uv_lock import run_uv_sync_frozen
 from uv_upgrade.services.save_load_toml import save_toml
 
 if TYPE_CHECKING:
@@ -20,3 +21,5 @@ def rollback_updater(
     save_toml(uv_lock_path, uv_lock_data)
     for py_project in py_projects.items:
         save_toml(py_project.path, py_project.data)
+
+    run_uv_sync_frozen(workdir=uv_lock_path.parent)
