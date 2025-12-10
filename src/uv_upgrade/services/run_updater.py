@@ -10,7 +10,7 @@ from uv_upgrade.services.normalize_and_check_path_to_pyproject import (
 )
 from uv_upgrade.services.rollback_updater import rollback_updater
 from uv_upgrade.services.run_uv_lock import (
-    run_uv_sync_frozen,
+    run_uv_sync,
     run_uv_sync_upgrade,
 )
 from uv_upgrade.services.save_load_toml import load_toml
@@ -43,6 +43,7 @@ def run_updater(
     rollback_message = "Rolling back to previous state because dry run is enabled."
 
     try:
+        # Because we want to check build problems also.
         run_uv_sync_upgrade(workdir=project_root_path)
 
         dependencies_registry = get_deps_from_project(workdir=project_root_path)
@@ -63,7 +64,7 @@ def run_updater(
                 # logger.info("Updated dependencies successfully.")
 
                 # Because we want to re-check that all is ok.
-                run_uv_sync_frozen(workdir=project_root_path)
+                run_uv_sync(workdir=project_root_path)
                 logger.info("Synced dependencies successfully.")
 
         else:
