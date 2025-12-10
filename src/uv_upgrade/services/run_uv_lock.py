@@ -9,9 +9,25 @@ class UnresolvedDependencyError(Exception):
     pass
 
 
+def run_uv_lock_upgrade(workdir: pathlib.Path) -> None:
+    try:
+        subprocess.run(
+            # uv lock --upgrade
+            ["uv", "lock", "--upgrade"],  # noqa: S607
+            check=True,
+            cwd=workdir,
+        )
+    except subprocess.CalledProcessError as e:
+        msg = "Failed to resolve dependencies with 'uv lock'. Please check your dependency specifications."
+        raise UnresolvedDependencyError(
+            msg,
+        ) from e
+
+
 def run_uv_lock(workdir: pathlib.Path) -> None:
     try:
         subprocess.run(
+            # uv lock
             ["uv", "lock"],  # noqa: S607
             check=True,
             cwd=workdir,
@@ -25,7 +41,8 @@ def run_uv_lock(workdir: pathlib.Path) -> None:
 
 def run_uv_sync(workdir: pathlib.Path) -> None:
     subprocess.run(
-        ["uv", "sync"],  # noqa: S607
+        # uv sync --all-groups --all-extras
+        ["uv", "sync", "--all-groups", "--all-extras"],  # noqa: S607
         check=True,
         cwd=workdir,
     )

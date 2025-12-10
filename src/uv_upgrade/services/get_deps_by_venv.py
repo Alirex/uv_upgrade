@@ -1,6 +1,8 @@
 import subprocess
 from typing import TYPE_CHECKING, NewType
 
+from uv_upgrade.services.save_load_toml import load_toml
+
 if TYPE_CHECKING:
     import pathlib
 
@@ -117,7 +119,40 @@ def parse_from_uv_tree(
     return dependencies
 
 
-def get_deps_by_venv(
+def parse_from_uv_lock(
+    workdir: pathlib.Path,
+) -> DependenciesRegistry:
+    uv_lock_path = get_and_check_path_to_uv_lock(workdir)
+
+    data = load_toml(uv_lock_path)
+
+    # Example:
+    # version = 1
+    # revision = 3
+    # requires-python = ">=3.14"
+    #
+    # [[package]]
+    # name = "annotated-types"
+    # version = "0.7.0"
+    # source = { registry = "https://pypi.org/simple" }
+    # sdist = { url = "https://files.pythonhosted.org/packages/ee/67/531ea369ba64dcff5ec9c3402f9f51bf748cec26dde048a2f973a4eea7f5/annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89", size = 16081, upload-time = "2024-05-20T21:33:25.928Z" }
+    # wheels = [
+    #     { url = "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53", size = 13643, upload-time = "2024-05-20T21:33:24.1Z" },
+    # ]
+    #
+    # [[package]]
+    # name = "basedpyright"
+    # version = "1.35.0"
+
+    dependencies: DependenciesRegistry = {}
+
+    for package in data["package"]:
+        dependencies[DependencyName(package["name"])] = Version(package["version"])
+
+    return dependencies
+
+
+def get_deps_from_project(
     workdir: pathlib.Path,
 ) -> DependenciesRegistry:
     """Get dependencies info."""
