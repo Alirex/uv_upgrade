@@ -458,7 +458,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "basedpyright", specifier = ">=1.36.0" },
-    { name = "mypy", specifier = ">=1.19.0" },
+    { name = "mypy", marker = "python_full_version >= '3.14'", specifier = ">=1.19.0" },
     { name = "poethepoet", specifier = ">=0.38.0" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-benchmark", specifier = ">=5.2.3" },

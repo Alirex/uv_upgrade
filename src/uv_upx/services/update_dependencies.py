@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from pydantic import BaseModel
 
@@ -22,6 +22,10 @@ class ChangesItem(BaseModel):
 
 
 type ChangesList = list[ChangesItem]
+
+VERSION_OPERATORS_I_PUT_IF_DIFFERENT: Final[set[str]] = {">="}
+
+VERSION_OPERATORS_I_EXPLICIT_IGNORE: Final[set[str]] = {"=="}
 
 
 def update_dependencies(  # noqa: C901, PLR0912
@@ -79,18 +83,22 @@ def update_dependencies(  # noqa: C901, PLR0912
         # Next work both for 1 and 2 version constraints
 
         version_constraint = parsed.version_constraints[0]
-        if version_constraint.operator not in {">="}:
-            msg = f"Operator {version_constraint.operator} is not supported yet. Skip. Dependency: {dep}"
+        if version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT:
+            # TODO: (?) Implement better version comparison logic here
+            if version_new != version_constraint.version:
+                version_constraint.version = version_new
+
+                deps_sequence_from_config[_index] = parsed.get_full_spec()
+                changes.append(ChangesItem(from_item=parsed_original, to_item=parsed))
+        elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
             if verbose:
+                msg = f"Explicitly ignoring version constraint {version_constraint}. Dependency: {dep}"
+                logger.info(msg)
+        else:
+            if verbose:
+                msg = f"Operator {version_constraint.operator} is not supported yet. Skip. Dependency: {dep}"
                 logger.warning(msg)
 
             continue
-
-        # Implement better version comparison logic here
-        if version_new != version_constraint.version:
-            version_constraint.version = version_new
-
-            deps_sequence_from_config[_index] = parsed.get_full_spec()
-            changes.append(ChangesItem(from_item=parsed_original, to_item=parsed))
 
     return changes
