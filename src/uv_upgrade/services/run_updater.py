@@ -37,6 +37,7 @@ def run_updater(
     py_projects_copy = copy.deepcopy(py_projects)
 
     is_rollback_needed = dry_run
+    rollback_message = "Rolling back to previous state because dry run is enabled."
 
     try:
         run_uv_lock_upgrade(workdir=project_root_path)
@@ -60,13 +61,16 @@ def run_updater(
                 logger.info("Synced dependencies successfully.")
 
         else:
-            logger.info("No important changes detected. Rolling back to previous state.")
+            msg = "No important changes detected. Rolling back to previous state."
+            logger.info(msg)
             is_rollback_needed = True
+            rollback_message = msg
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         msg = f"Failed to update dependencies: {e}. Rolling back to previous state."
-        logger.exception(msg)
+        logger.error(msg)  # noqa: TRY400
         is_rollback_needed = True
+        rollback_message = msg
 
     if is_rollback_needed:
         rollback_updater(
@@ -75,3 +79,4 @@ def run_updater(
             #
             py_projects=py_projects_copy,
         )
+        logger.info(rollback_message)

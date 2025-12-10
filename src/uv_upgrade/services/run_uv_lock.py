@@ -46,3 +46,12 @@ def run_uv_sync(workdir: pathlib.Path) -> None:
         check=True,
         cwd=workdir,
     )
+
+
+def run_uv_sync_frozen(workdir: pathlib.Path) -> None:
+    subprocess.run(
+        # uv sync --all-groups --all-extras --frozen
+        ["uv", "sync", "--all-groups", "--all-extras", "--frozen"],  # noqa: S607
+        check=True,
+        cwd=workdir,
+    )
