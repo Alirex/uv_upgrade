@@ -9,7 +9,10 @@ from uv_upgrade.services.normalize_and_check_path_to_pyproject import (
     get_and_check_path_to_uv_lock,
 )
 from uv_upgrade.services.rollback_updater import rollback_updater
-from uv_upgrade.services.run_uv_lock import run_uv_lock, run_uv_lock_upgrade, run_uv_sync
+from uv_upgrade.services.run_uv_lock import (
+    run_uv_sync_frozen,
+    run_uv_sync_upgrade,
+)
 from uv_upgrade.services.save_load_toml import load_toml
 
 if TYPE_CHECKING:
@@ -40,7 +43,7 @@ def run_updater(
     rollback_message = "Rolling back to previous state because dry run is enabled."
 
     try:
-        run_uv_lock_upgrade(workdir=project_root_path)
+        run_uv_sync_upgrade(workdir=project_root_path)
 
         dependencies_registry = get_deps_from_project(workdir=project_root_path)
 
@@ -51,13 +54,16 @@ def run_updater(
             dry_run=dry_run,
             verbose=verbose,
         ):
+            logger.info("Updated pyproject.toml files successfully.")
+
             if dry_run:
                 logger.info("Dry run. No changes were made.")
             else:
-                run_uv_lock(workdir=project_root_path)
-                logger.info("Updated dependencies successfully.")
+                # run_uv_lock(workdir=project_root_path)
+                # logger.info("Updated dependencies successfully.")
 
-                run_uv_sync(workdir=project_root_path)
+                # Because we want to re-check that all is ok.
+                run_uv_sync_frozen(workdir=project_root_path)
                 logger.info("Synced dependencies successfully.")
 
         else:
@@ -67,16 +73,20 @@ def run_updater(
             rollback_message = msg
 
     except Exception as e:  # noqa: BLE001
-        msg = f"Failed to update dependencies: {e}. Rolling back to previous state."
+        msg = f"Failed to update dependencies: '{e}' Rolling back to previous state."
         logger.error(msg)  # noqa: TRY400
         is_rollback_needed = True
         rollback_message = msg
 
-    if is_rollback_needed:
-        rollback_updater(
-            uv_lock_path=uv_lock_path,
-            uv_lock_data=uv_lock_data_copy,
-            #
-            py_projects=py_projects_copy,
-        )
-        logger.info(rollback_message)
+    try:
+        if is_rollback_needed:
+            rollback_updater(
+                uv_lock_path=uv_lock_path,
+                uv_lock_data=uv_lock_data_copy,
+                #
+                py_projects=py_projects_copy,
+            )
+            logger.info(rollback_message)
+    except Exception as e:  # noqa: BLE001
+        msg = f"Failed to rollback: '{e}'"
+        logger.error(msg)  # noqa: TRY400
