@@ -123,6 +123,28 @@ In fact, it handles any part of the constraint with a supported operator.
 
 It respects extras. Like `bla[dev]>=1.0.0;python_version>="3.14"`.
 
+### Fix undefined constraints with lower bound to the new version
+
+It sets undefined lower bounds to the new version.
+
+For example, before:
+
+```toml
+dependencies = [
+    "foo>=1.0.0",
+    "bla",
+]
+```
+
+After:
+
+```toml
+dependencies = [
+    "foo>=1.0.0",
+    "bla>=2.0.0",
+]
+```
+
 ### Skip unhandled constraints
 
 It skips unhandled and complex constraints. Like:
