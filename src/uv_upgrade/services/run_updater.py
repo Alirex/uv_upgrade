@@ -2,10 +2,15 @@ import copy
 import logging
 from typing import TYPE_CHECKING
 
-from uv_upgrade.services.get_deps_by_venv import get_deps_by_venv
-from uv_upgrade.services.handle_groups import handle_dependency_groups, handle_main_dependency_group
-from uv_upgrade.services.run_uv_lock import UnresolvedDependencyError, run_uv_lock, run_uv_sync
-from uv_upgrade.services.save_load_toml import load_toml, save_toml
+from uv_upgrade.services.get_all_pyprojects import get_all_pyprojects
+from uv_upgrade.services.get_deps_by_venv import get_deps_from_project
+from uv_upgrade.services.handle_groups import handle_py_projects
+from uv_upgrade.services.normalize_and_check_path_to_pyproject import (
+    get_and_check_path_to_uv_lock,
+)
+from uv_upgrade.services.rollback_updater import rollback_updater
+from uv_upgrade.services.run_uv_lock import run_uv_lock, run_uv_lock_upgrade, run_uv_sync
+from uv_upgrade.services.save_load_toml import load_toml
 
 if TYPE_CHECKING:
     import pathlib
@@ -13,56 +18,60 @@ if TYPE_CHECKING:
 
 def run_updater(
     *,
-    path_to_pyproject: pathlib.Path,
+    project_root_path: pathlib.Path,
     dry_run: bool = False,
     verbose: bool = False,
 ) -> None:
     logger = logging.getLogger(__name__)
 
-    data = load_toml(path_to_pyproject)
+    uv_lock_path = get_and_check_path_to_uv_lock(project_root_path)
+    uv_lock_data = load_toml(uv_lock_path)
+    uv_lock_data_copy = copy.deepcopy(uv_lock_data)
 
-    data_source_copy = copy.deepcopy(data)
-
-    new_deps = get_deps_by_venv(workdir=path_to_pyproject.parent)
-
+    py_projects = get_all_pyprojects(project_root_path)
     if verbose:
-        logger.info("Dependencies info found:")
-        for dep, latest in new_deps.items():
-            logger.info(f"  {dep}: {latest}")
+        logger.info(f"Found {len(py_projects.items)} pyproject.toml files in the workspace.")
+        for py_project in py_projects.items:
+            logger.info(f"  {py_project.path.as_uri()}")
 
-    if not new_deps:
-        logger.info("No outdated dependencies found.")
-        return
+    py_projects_copy = copy.deepcopy(py_projects)
 
-    changed_any = handle_main_dependency_group(
-        data=data,
-        new_deps=new_deps,
-        verbose=verbose,
-    )
-
-    changed_any = changed_any or handle_dependency_groups(
-        data=data,
-        new_deps=new_deps,
-        verbose=verbose,
-    )
-
-    if not changed_any:
-        logger.info("No dependencies were updated.")
-        return
-
-    if dry_run:
-        logger.info("Dry run mode; not writing changes.")
-        return
-
-    save_toml(path_to_pyproject, data)
-    logger.info(f"Wrote updated dependencies to {path_to_pyproject.as_uri()}")
+    is_rollback_needed = dry_run
 
     try:
-        run_uv_lock(workdir=path_to_pyproject.parent)
-        logger.info("Updated dependencies successfully.")
-    except UnresolvedDependencyError:
-        logger.error("Failed to update dependencies. Rolling back to previous state.")  # noqa: TRY400
-        save_toml(path_to_pyproject, data_source_copy)
+        run_uv_lock_upgrade(workdir=project_root_path)
 
-    run_uv_sync(workdir=path_to_pyproject.parent)
-    logger.info("Synced dependencies successfully.")
+        dependencies_registry = get_deps_from_project(workdir=project_root_path)
+
+        if handle_py_projects(
+            py_projects=py_projects,
+            dependencies_registry=dependencies_registry,
+            #
+            dry_run=dry_run,
+            verbose=verbose,
+        ):
+            if dry_run:
+                logger.info("Dry run. No changes were made.")
+            else:
+                run_uv_lock(workdir=project_root_path)
+                logger.info("Updated dependencies successfully.")
+
+                run_uv_sync(workdir=project_root_path)
+                logger.info("Synced dependencies successfully.")
+
+        else:
+            logger.info("No important changes detected. Rolling back to previous state.")
+            is_rollback_needed = True
+
+    except Exception as e:
+        msg = f"Failed to update dependencies: {e}. Rolling back to previous state."
+        logger.exception(msg)
+        is_rollback_needed = True
+
+    if is_rollback_needed:
+        rollback_updater(
+            uv_lock_path=uv_lock_path,
+            uv_lock_data=uv_lock_data_copy,
+            #
+            py_projects=py_projects_copy,
+        )
