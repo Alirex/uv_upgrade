@@ -129,7 +129,7 @@ def parse_from_uv_lock(
 
     dependencies: DependenciesRegistry = {}
     for package in data.get("package", []):  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        dependencies[DependencyName(package["name"])] = Version(package["version"])  # pyright: ignore[reportUnknownArgumentType]
+        dependencies[DependencyName(package["name"])] = Version(package["version"])  # pyright: ignore[reportUnknownArgumentType] # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
 
     return dependencies
 
@@ -138,4 +138,4 @@ def get_deps_from_project(
     workdir: pathlib.Path,
 ) -> DependenciesRegistry:
     """Get dependencies info."""
-    return parse_from_uv_tree(workdir=workdir)
+    return parse_from_uv_lock(workdir=workdir)
