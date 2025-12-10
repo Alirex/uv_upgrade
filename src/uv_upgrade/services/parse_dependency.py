@@ -4,7 +4,7 @@ from uv_upgrade.services.get_deps_from_project import DependencyName
 
 def parse_dependency(  # noqa: C901, PLR0912, PLR0915
     dependency_string: str,
-) -> DependencyParsed:
+) -> DependencyParsed:  # sourcery skip: low-code-quality
     dependency_string = dependency_string.strip()
     if not dependency_string:
         msg = "Empty dependency string"

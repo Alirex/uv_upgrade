@@ -55,8 +55,10 @@ def update_dependencies(  # noqa: C901, PLR0912
 
         try:
             version_new = dependencies_registry[parsed.dependency_name]
-        except KeyError:
-            continue
+        except KeyError as e:
+            # Note: raise error, because it now we have all the dependencies in the registry.
+            msg = f"Dependency not found in the registry: {parsed.dependency_name}"
+            raise ValueError(msg) from e
 
         parsed_original = copy.deepcopy(parsed)
 
