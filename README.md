@@ -84,31 +84,38 @@ Run `uv sync --all-groups --all-extras --all-packages --upgrade`.
 
 Get dependencies versions from `uv.lock`.
 
-Put them in `pyproject.toml` files.
+Put them in `pyproject.toml` files in related groups.
+
+So, the main responsibility for dependencies resolution is on `uv`.
 
 ### Workspace support
 
 It works with workspaces. At least for some basic cases.
 
-### Dependencies constraints
+### Updates simple dependencies
 
-Now it handles only relatively simple cases.
+Updates `>=` dependencies. Like `bla>=2.0.0`.
 
-So, it updates only `>=` dependencies.
+### Skip pinned versions
 
-This includes:
+It doesn't touch pinned versions. Like `bla==2.0.0`.
 
-- single versions (`>=1.0.0`)
-- ranges (`>=1.0.0, <2.0.0`)
-  - Move lower bound to the new version.
+### Respect simple ranges
 
-Some dependencies constraints are skipped. Because i don't meet them yet.
+It respects simple dependency ranges. Like `bla>=1.0.0,<2.0.0`.
 
-Some are skipped by design (for now). Like:
+It moves the lower bound to the new version.
 
-- `==` constraints
+### Respect extras
 
-But it can be changed with "options" in the future.
+It respects extras. Like `bla[dev]>=1.0.0;python_version>="3.14"`.
+
+### Skip unhandled constraints
+
+It skips unhandled and complex constraints. Like:
+
+- `bla<=1.0.0`
+- `bla>=2.0.0,!=1.5.0,<3.0.0`
 
 ### Style preservation
 
