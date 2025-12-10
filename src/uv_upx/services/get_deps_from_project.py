@@ -1,8 +1,8 @@
 import subprocess
 from typing import TYPE_CHECKING, NewType
 
-from uv_upgrade.services.normalize_and_check_path_to_pyproject import get_and_check_path_to_uv_lock
-from uv_upgrade.services.save_load_toml import load_toml
+from uv_upx.services.normalize_and_check_path_to_pyproject import get_and_check_path_to_uv_lock
+from uv_upx.services.save_load_toml import load_toml
 
 if TYPE_CHECKING:
     import pathlib

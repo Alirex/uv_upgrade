@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from uv_upgrade.models.dependency_parsed import DependencyParsed
-from uv_upgrade.services.parse_dependency import parse_dependency
+from uv_upx.models.dependency_parsed import DependencyParsed
+from uv_upx.services.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
-    from uv_upgrade.services.get_deps_from_project import DependenciesRegistry
+    from uv_upx.services.get_deps_from_project import DependenciesRegistry
 
 type IncludedDependencyGroup = dict[str, str]
 

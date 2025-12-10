@@ -1,5 +1,5 @@
 [project]
-name = "uv-upgrade"
+name = "uv-upx"
 version = "0.2.0"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."

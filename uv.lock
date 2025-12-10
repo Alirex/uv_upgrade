@@ -428,7 +428,7 @@ wheels = [
 ]
 
 [[package]]
-name = "uv-upgrade"
+name = "uv-upx"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [

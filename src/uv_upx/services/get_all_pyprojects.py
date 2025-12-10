@@ -4,9 +4,9 @@ from typing import Any, cast
 from pydantic import BaseModel, ConfigDict
 from tomlkit import TOMLDocument
 
-from uv_upgrade.services.get_pyproject_paths_by_globs import get_pyproject_paths_by_globs
-from uv_upgrade.services.normalize_and_check_path_to_pyproject import get_and_check_path_to_pyproject
-from uv_upgrade.services.save_load_toml import load_toml
+from uv_upx.services.get_pyproject_paths_by_globs import get_pyproject_paths_by_globs
+from uv_upx.services.normalize_and_check_path_to_pyproject import get_and_check_path_to_pyproject
+from uv_upx.services.save_load_toml import load_toml
 
 
 class PyProjectWrapper(BaseModel):

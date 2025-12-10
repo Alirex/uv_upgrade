@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-from uv_upgrade.services.run_uv_lock import run_uv_sync_frozen
-from uv_upgrade.services.save_load_toml import save_toml
+from uv_upx.services.run_uv_lock import run_uv_sync_frozen
+from uv_upx.services.save_load_toml import save_toml
 
 if TYPE_CHECKING:
     import pathlib
 
     from tomlkit import TOMLDocument
 
-    from uv_upgrade.services.get_all_pyprojects import PyProjectsRegistry
+    from uv_upx.services.get_all_pyprojects import PyProjectsRegistry
 
 
 def rollback_updater(
