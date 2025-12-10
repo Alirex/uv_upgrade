@@ -1,11 +1,17 @@
 [project]
 name = "uv-upgrade"
 version = "0.2.0"
-description = "Add your description here"
+
+description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
 readme = "README.md"
+keywords = ["uv", "upgrade", "dependencies", "pyproject.toml", "automation", "cli"]
+
+license_files = ["LICENSE.txt"]
+
 authors = [
-    { name = "alirex", email = "alirex.prime@gmail.com" }
+    { name = "Alirex", email = "alirex.prime@gmail.com" }
 ]
+
 requires-python = ">=3.14"
 dependencies = [
     # Better classes and data validation
@@ -15,6 +21,10 @@ dependencies = [
     # CLI app framework
     "typer>=0.20.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Alirex/uv_upgrade"
+
 
 [dependency-groups]
 dev = [
