@@ -1,6 +1,6 @@
 [project]
 name = "uv-upx"
-version = "0.2.0"
+version = "0.2.2"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
 readme = "README.md"
@@ -47,7 +47,10 @@ dev = [
 ]
 
 [project.scripts]
+# For clarity
 uv-upgrade = "uv_upx:main"
+# For compatibility with uvx.
+uv-upx = "uv_upx:main"
 
 [build-system]
 requires = ["uv_build>=0.9.15,<0.10.0"]

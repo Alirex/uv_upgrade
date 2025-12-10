@@ -86,3 +86,20 @@ For system-wide usage during development, run this command from the repository d
 ```shell
 uv tool install --editable .
 ```
+
+## Bump, Build and Publish
+
+Update the version in pyproject.toml,
+update `uv.lock`,
+clean `dist` (except `.gitignore`),
+build the package
+and publish to PyPI.
+
+```shell
+cd $(git rev-parse --show-toplevel) &&\
+uv version --bump patch &&\
+uv sync --all-packages &&\
+find dist -type f -not -name '.gitignore' -delete &&\
+uv build &&\
+uv publish
+```

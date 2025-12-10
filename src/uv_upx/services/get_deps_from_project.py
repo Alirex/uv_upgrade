@@ -129,7 +129,14 @@ def parse_from_uv_lock(
 
     dependencies: DependenciesRegistry = {}
     for package in data.get("package", []):  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        dependencies[DependencyName(package["name"])] = Version(package["version"])  # pyright: ignore[reportUnknownArgumentType] # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        version = package.get("version")  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+
+        if version is None:
+            # Just in case. Possible problem with "[tool.hatch.version]"
+            # https://github.com/zundertj/uv-bump/issues/5
+            continue
+
+        dependencies[DependencyName(package["name"])] = Version(version)  # pyright: ignore[reportUnknownArgumentType] # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
 
     return dependencies
 
