@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Final
 
 from pydantic import BaseModel
 
-from uv_upx.models.dependency_parsed import DependencyParsed
+from uv_upx.models.dependency_parsed import DependencyParsed, VersionConstraint
 from uv_upx.services.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
@@ -25,7 +25,9 @@ type ChangesList = list[ChangesItem]
 
 # https://peps.python.org/pep-0440/#version-specifiers
 
-VERSION_OPERATORS_I_PUT_IF_DIFFERENT: Final[set[str]] = {">="}
+VERSION_OPERATOR_I_GREATER_OR_EQUAL: Final[str] = ">="
+
+VERSION_OPERATORS_I_PUT_IF_DIFFERENT: Final[set[str]] = {VERSION_OPERATOR_I_GREATER_OR_EQUAL}
 
 VERSION_OPERATORS_I_EXPLICIT_IGNORE: Final[set[str]] = {
     # Pinned versions
@@ -104,6 +106,12 @@ def update_dependencies(  # noqa: C901, PLR0912
                     logger.warning(msg)
 
                 continue
+
+        if not parsed.version_constraints:
+            parsed.version_constraints.append(
+                VersionConstraint(operator=VERSION_OPERATOR_I_GREATER_OR_EQUAL, version=version_new),
+            )
+            is_has_changes = True
 
         if is_has_changes:
             deps_sequence_from_config[_index] = parsed.get_full_spec()
