@@ -167,9 +167,6 @@ cython_debug/
 
 # Other settings
 !.idea/misc.xml
-
-# Plugins settings
-!.idea/ruff.xml
 # [jet_brains_custom]-[END]
 
 compose.override.yaml
