@@ -2,18 +2,18 @@ import copy
 import logging
 from typing import TYPE_CHECKING
 
-from uv_upgrade.services.get_all_pyprojects import get_all_pyprojects
-from uv_upgrade.services.get_deps_from_project import get_deps_from_project
-from uv_upgrade.services.handle_groups import handle_py_projects
-from uv_upgrade.services.normalize_and_check_path_to_pyproject import (
+from uv_upx.services.get_all_pyprojects import get_all_pyprojects
+from uv_upx.services.get_deps_from_project import get_deps_from_project
+from uv_upx.services.handle_groups import handle_py_projects
+from uv_upx.services.normalize_and_check_path_to_pyproject import (
     get_and_check_path_to_uv_lock,
 )
-from uv_upgrade.services.rollback_updater import rollback_updater
-from uv_upgrade.services.run_uv_lock import (
+from uv_upx.services.rollback_updater import rollback_updater
+from uv_upx.services.run_uv_lock import (
     run_uv_sync,
     run_uv_sync_upgrade,
 )
-from uv_upgrade.services.save_load_toml import load_toml
+from uv_upx.services.save_load_toml import load_toml
 
 if TYPE_CHECKING:
     import pathlib

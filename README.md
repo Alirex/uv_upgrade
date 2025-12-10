@@ -36,14 +36,14 @@ Run it from any directory, except the project directory.
 if ! command -v uv-upgrade &> /dev/null; then
     uv tool install git+https://github.com/Alirex/uv_upgrade
 else
-    uv tool upgrade uv-upgrade
+    uv tool upgrade uv-upx
 fi
 ```
 
 Or run with uvx:
 
 ```shell
-uvx uv-upgrade
+uvx uv-upx
 ```
 
 Dev installation: [see here](docs_extra/dev.md#install-app-system-wide-in-development-mode)
@@ -59,7 +59,7 @@ uv tool list --show-python
 If you need to remove the project with all data, run this command from the project directory:
 
 ```shell
-uv tool uninstall uv-upgrade
+uv tool uninstall uv-upx
 ```
 
 ---
