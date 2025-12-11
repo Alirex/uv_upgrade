@@ -1,10 +1,17 @@
+import enum
+import itertools
 import logging
 from typing import TYPE_CHECKING, Any
 
+from pydantic import BaseModel
+
 from uv_upx.services.dependency_up import ChangesList, IncludedDependencyGroup, update_dependencies
+from uv_upx.services.dependency_up.models.dependencies_list import TomlBasedDependenciesList
 from uv_upx.services.toml import toml_save
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from tomlkit import TOMLDocument
 
     from uv_upx.services.dependencies_from_project import DependenciesRegistry
@@ -14,119 +21,95 @@ if TYPE_CHECKING:
 # https://docs.astral.sh/uv/concepts/projects/dependencies/
 
 
+class DependencySection(enum.StrEnum):
+    MAIN = "project.dependencies"
+    DEPENDENCY_GROUPS = "dependency-groups"
+    OPTIONAL_DEPENDENCIES = "project.optional-dependencies"
+
+
+class DependencyGroup(BaseModel):
+    section: DependencySection
+    group_name: str | None = None
+    dependencies: TomlBasedDependenciesList
+
+
 def handle_main_dependency_group(
-    *,
     data: TOMLDocument,
-    dependencies_registry: DependenciesRegistry,
-    verbose: bool = False,
-    #
-    preserve_original_package_names: bool = False,
-) -> ChangesList:
+) -> Iterable[DependencyGroup]:
     """Check the main dependencies group."""
     logger = logging.getLogger(__name__)
 
     project: dict[Any, Any] = data.get("project", {})  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
     if not isinstance(project, dict):
         logger.warning("No [project] table found in pyproject.toml")
-        return []
+        return
 
     dependencies: list[str] = project.get("dependencies", [])  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
     if not isinstance(dependencies, list):
         logger.warning("No [project].dependencies found in pyproject.toml")
-        return []
+        return
 
-    return update_dependencies(
-        deps_sequence_from_config=dependencies,  # pyright: ignore[reportUnknownArgumentType]
-        dependencies_registry=dependencies_registry,
-        verbose=verbose,
-        #
-        preserve_original_package_names=preserve_original_package_names,
+    yield DependencyGroup(
+        section=DependencySection.MAIN,
+        dependencies=dependencies,  # pyright: ignore[reportUnknownArgumentType]
     )
 
 
 def handle_dependency_groups(
-    *,
     data: TOMLDocument,
-    dependencies_registry: DependenciesRegistry,
-    verbose: bool = False,
-    #
-    preserve_original_package_names: bool = False,
-) -> ChangesList:
+) -> Iterable[DependencyGroup]:
     """Check the dependency-groups table.
 
     https://docs.astral.sh/uv/concepts/projects/dependencies/#development-dependencies
     """
-    return handle_dependency_groups_inner(
+    yield from handle_dependency_groups_inner(
         groups=data.get("dependency-groups", {}),  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        dependencies_registry=dependencies_registry,
-        verbose=verbose,
-        #
-        preserve_original_package_names=preserve_original_package_names,
+        section=DependencySection.DEPENDENCY_GROUPS,
     )
 
 
 def handle_optional_dependencies(
-    *,
     data: TOMLDocument,
-    dependencies_registry: DependenciesRegistry,
-    verbose: bool = False,
-    #
-    preserve_original_package_names: bool = False,
-) -> ChangesList:
+) -> Iterable[DependencyGroup]:
     """Check the project.optional-dependencies table.
 
     https://docs.astral.sh/uv/concepts/projects/dependencies/#optional-dependencies
     """
-    return handle_dependency_groups_inner(
+    yield from handle_dependency_groups_inner(
         groups=data.get("project", {}).get("optional-dependencies", {}),  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        dependencies_registry=dependencies_registry,
-        verbose=verbose,
-        #
-        preserve_original_package_names=preserve_original_package_names,
+        section=DependencySection.OPTIONAL_DEPENDENCIES,
     )
 
 
 def handle_dependency_groups_inner(
     *,
     groups: Any,  # noqa: ANN401
-    dependencies_registry: DependenciesRegistry,
-    verbose: bool = False,
     #
-    preserve_original_package_names: bool = False,
-) -> ChangesList:
-    """Check the dependency-groups table.
-
-    https://docs.astral.sh/uv/concepts/projects/dependencies/#development-dependencies
-
-    https://docs.astral.sh/uv/concepts/projects/dependencies/#optional-dependencies
-    """
-    logger = logging.getLogger(__name__)
-
+    section: DependencySection,
+) -> Iterable[DependencyGroup]:
+    """Check the dependency-groups table."""
     if not isinstance(groups, dict):
-        return []
+        return
 
     dependency_groups: dict[str, Any] = groups  # pyright: ignore[reportUnknownVariableType]
 
-    changes: ChangesList = []
     for _group_name, _group_val in dependency_groups.items():
-        if verbose:
-            logger.info(f"Checking group: {_group_name}")
-
         if not isinstance(_group_val, list):
             continue
 
         group_val: list[str | IncludedDependencyGroup] = _group_val  # pyright: ignore[reportUnknownVariableType]
 
-        changes_local = update_dependencies(
-            deps_sequence_from_config=group_val,
-            dependencies_registry=dependencies_registry,
-            verbose=verbose,
-            #
-            preserve_original_package_names=preserve_original_package_names,
-        )
-        changes.extend(changes_local)
+        yield DependencyGroup(section=section, group_name=_group_name, dependencies=group_val)
 
-    return changes
+
+def collect_from_py_project(
+    data: TOMLDocument,
+) -> Iterable[DependencyGroup]:
+    yield from itertools.chain(
+        handle_main_dependency_group(data=data),
+        handle_dependency_groups(data=data),
+        handle_optional_dependencies(data=data),
+    )
 
 
 def handle_py_project(
@@ -146,35 +129,16 @@ def handle_py_project(
 
     changes: ChangesList = []
 
-    changes.extend(
-        handle_main_dependency_group(
-            data=data,
+    for group in collect_from_py_project(data):
+        changes_local = update_dependencies(
+            deps_sequence_from_config=group.dependencies,
             dependencies_registry=dependencies_registry,
+            #
             verbose=verbose,
             #
             preserve_original_package_names=preserve_original_package_names,
-        ),
-    )
-
-    changes.extend(
-        handle_dependency_groups(
-            data=data,
-            dependencies_registry=dependencies_registry,
-            verbose=verbose,
-            #
-            preserve_original_package_names=preserve_original_package_names,
-        ),
-    )
-
-    changes.extend(
-        handle_optional_dependencies(
-            data=data,
-            dependencies_registry=dependencies_registry,
-            verbose=verbose,
-            #
-            preserve_original_package_names=preserve_original_package_names,
-        ),
-    )
+        )
+        changes.extend(changes_local)
 
     if changes:
         if dry_run:
