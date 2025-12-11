@@ -51,10 +51,10 @@ def update_dependencies(  # noqa: C901, PLR0912
             logger.info(f"Parsed dependency: {parsed}")
 
         try:
-            version_new = dependencies_registry[parsed.dependency_name]
+            version_new = dependencies_registry[parsed.package_name]
         except KeyError:
             # Note: raise error, because it now we have all the dependencies in the registry.
-            msg = f"Dependency not found in the registry: {parsed.dependency_name}"
+            msg = f"Dependency not found in the registry: {parsed.package_name}"
             logger.error(msg)  # noqa: TRY400
             continue
 
