@@ -1,6 +1,6 @@
 [project]
 name = "uv-upx"
-version = "0.3.3"
+version = "0.3.4"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
 readme = "README.remotified.md"
