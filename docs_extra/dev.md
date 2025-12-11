@@ -79,6 +79,27 @@ prek run --all-files
 
 Useful after changing the hooks. Or just to check if everything is fine.
 
+## Update dependencies
+
+### Install/Update updater
+
+```shell
+if ! command -v uv-upx &> /dev/null; then
+    uv tool install uv-upx
+else
+    uv tool upgrade uv-upx
+fi
+
+uv-upgrade --version
+```
+
+### Update dependencies
+
+```shell
+cd $(git rev-parse --show-toplevel) &&\
+uv-upgrade
+```
+
 ## Install app system-wide in Development mode
 
 For system-wide usage during development, run this command from the repository directory:
