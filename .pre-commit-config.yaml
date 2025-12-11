@@ -60,11 +60,11 @@ repos:
   - repo: local
     # Hooks with local scripts.
     hooks:
-      #      - id: pytest
-      #        name: pytest
-      #        entry: uv run pytest
-      #        language: system
-      #        pass_filenames: false
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
 
       - id: basedpyright
         # Check Python code style.
