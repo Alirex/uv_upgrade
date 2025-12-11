@@ -3,7 +3,7 @@ from re import Pattern
 from typing import Final
 
 from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_I_ALL
-from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, VersionConstraint
+from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, DependencyString, VersionConstraint
 from uv_upx.services.package_name import PackageName
 
 VERSION_OPERATORS_AS_OR: Final[str] = "|".join(sorted(VERSION_OPERATORS_I_ALL, key=lambda x: len(x), reverse=True))
@@ -42,7 +42,7 @@ PATTERN_I_VERSION_CONSTRAINT: Final[Pattern[str]] = re.compile(
 
 
 def parse_dependency(
-    dependency_string: str,
+    dependency_string: DependencyString,
     #
     *,
     preserve_original_package_names: bool = False,
