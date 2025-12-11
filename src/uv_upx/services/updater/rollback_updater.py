@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING
 
 from uv_upx.services.run_uv_related import UvSyncMode, run_uv_sync
@@ -20,6 +21,8 @@ def rollback_updater(
     #
     no_sync: bool = False,
 ) -> None:
+    logger = logging.getLogger(__name__)
+
     toml_save(uv_lock_path, uv_lock_data)
     for py_project in py_projects.items:
         toml_save(py_project.path, py_project.data)
@@ -29,3 +32,5 @@ def rollback_updater(
             workdir=uv_lock_path.parent,
             uv_sync_mode=UvSyncMode.FROZEN,
         )
+
+    logger.info("Rollback completed.")

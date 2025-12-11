@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class UvSyncMode(enum.Enum):
     UPGRADE = enum.auto()
     FROZEN = enum.auto()
-    # TODO: (?) Add "DEFAULT" mode? Without options.
+    DEFAULT = enum.auto()
 
 
 def run_uv_sync(
@@ -30,6 +30,8 @@ def run_uv_sync(
             command.append("--upgrade")
         case UvSyncMode.FROZEN:
             command.append("--frozen")
+        case UvSyncMode.DEFAULT:
+            pass
 
     try:
         subprocess.run(  # noqa: S603
