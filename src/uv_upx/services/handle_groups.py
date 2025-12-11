@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 from typing import TYPE_CHECKING
 
@@ -63,17 +64,26 @@ def handle_py_projects(
 ) -> ChangesList:
     """Handle multiple pyproject.toml files."""
     changes: ChangesList = []
-    for py_project in py_projects.items:
-        changes_local = handle_py_project(
-            dependencies_registry=dependencies_registry,
-            pyproject_wrapper=py_project,
-            #
-            dry_run=dry_run,
-            verbose=verbose,
-            #
-            preserve_original_package_names=preserve_original_package_names,
-        )
 
-        changes.extend(changes_local)
+    # Note: don't really need threads here in this case.
+    #   But this place can be one of the places to use parallelism.
+
+    with concurrent.futures.ThreadPoolExecutor() as worker:
+        tasks = [
+            worker.submit(
+                handle_py_project,
+                dependencies_registry=dependencies_registry,
+                pyproject_wrapper=py_project,
+                #
+                dry_run=dry_run,
+                verbose=verbose,
+                #
+                preserve_original_package_names=preserve_original_package_names,
+            )
+            for py_project in py_projects.items
+        ]
+        for future in concurrent.futures.as_completed(tasks):
+            changes_local = future.result()
+            changes.extend(changes_local)
 
     return changes
