@@ -3,7 +3,7 @@ from uv_upx.services.dependency_up.models.dependency_parsed import DependencyPar
 from uv_upx.services.package_name import PackageName
 
 
-def parse_dependency(  # noqa: C901, PLR0912, PLR0915
+def parse_dependency(
     dependency_string: str,
     #
     *,
@@ -53,12 +53,31 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
         msg = f"Invalid dependency string: {main}"
         raise ValueError(msg)
 
+    try:
+        version_constraints = parse_version_constraints(version_part)
+    except ValueError as e:
+        msg = f"Invalid dependency string: {main}"
+        raise ValueError(msg) from e
+
+    return DependencyParsed(
+        original_name=name if preserve_original_package_names else None,
+        package_name=PackageName(name),
+        extras=extras,
+        version_constraints=version_constraints,
+        marker=marker,
+    )
+
+
+def parse_version_constraints(
+    version_part: str,
+) -> list[VersionConstraint]:
     # parse version constraints (comma separated)
     version_constraints: list[VersionConstraint] = []
+
     if version_part:
         # do not attempt to parse direct URL / VCS refs (start with '@')
         if version_part.startswith("@"):
-            msg = f"Invalid dependency string: {main}"
+            msg = f"Invalid version_part string: '{version_part}'"
             raise ValueError(msg)
 
         raw_parts = [p.strip() for p in version_part.split(",") if p.strip()]
@@ -82,13 +101,7 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
                         matched = True
                         break
             if not matched:
-                msg = f"Invalid dependency string: {main}"
+                msg = f"Invalid version_part string: '{version_part}'"
                 raise ValueError(msg)
 
-    return DependencyParsed(
-        original_name=name if preserve_original_package_names else None,
-        dependency_name=PackageName(name),
-        extras=extras,
-        version_constraints=version_constraints,
-        marker=marker,
-    )
+    return version_constraints
