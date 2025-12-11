@@ -2,7 +2,8 @@ exclude: |
   (?x)^(
     \.idea/.*|
     docs_extra/cli_help_simple.md|
-    docs_extra/cli_help_advanced.md
+    docs_extra/cli_help_advanced.md|
+    README.remotified.md
     )$
 
 repos:
@@ -108,5 +109,15 @@ repos:
         name: app-check
         entry: uv run uv-upgrade --help
         language: system
+        pass_filenames: false
+        # hook will execute using a single process instead of in parallel
+        require_serial: true
+
+      - id: mdremotifier
+        #
+        name: mdremotifier
+        entry: uv run mdremotifier --input README.md --output README.remotified.md --url-prefix https://github.com/Alirex/uv_upgrade/blob/main/ --img-url-prefix https://raw.githubusercontent.com/Alirex/uv_upgrade/main/
+        language: system
+        pass_filenames: false
         # hook will execute using a single process instead of in parallel
         require_serial: true
