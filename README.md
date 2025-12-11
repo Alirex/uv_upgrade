@@ -40,6 +40,8 @@ if ! command -v uv-upx &> /dev/null; then
 else
     uv tool upgrade uv-upx
 fi
+
+uv-upgrade --version
 ```
 
 Or run advanced version with uvx:
