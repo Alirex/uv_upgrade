@@ -5,7 +5,7 @@ from typing import Annotated
 import typer
 
 from uv_upx.services.normalize_paths import normalize_and_check_path_to_project_root
-from uv_upx.services.run_updater import run_updater
+from uv_upx.services.updater import run_updater
 
 app = typer.Typer(
     pretty_exceptions_enable=False,

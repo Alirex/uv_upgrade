@@ -6,13 +6,10 @@ from uv_upx.services.dependencies_from_project import get_dependencies_from_proj
 from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
 from uv_upx.services.handle_groups import handle_py_projects
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
-from uv_upx.services.rollback_updater import rollback_updater
-from uv_upx.services.run_uv_related import (
-    UvSyncMode,
-    run_uv_lock,
-    run_uv_sync,
-)
 from uv_upx.services.toml import toml_load
+from uv_upx.services.updater.check_updating_result import check_updating_result
+from uv_upx.services.updater.rollback_updater import rollback_updater
+from uv_upx.services.updater.update_lock_file import update_lock_file
 
 if TYPE_CHECKING:
     import pathlib
@@ -47,23 +44,14 @@ def run_updater(
     rollback_message = "Rolling back to previous state because dry run is enabled."
 
     try:
-        if no_sync:
-            run_uv_lock(
-                workdir=project_root_path,
-                upgrade=True,
-            )
-        else:
-            # Because we want to check build problems also.
-            run_uv_sync(
-                workdir=project_root_path,
-                uv_sync_mode=UvSyncMode.UPGRADE,
-            )
-
-        dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
+        update_lock_file(
+            project_root_path,
+            no_sync=no_sync,
+        )
 
         if handle_py_projects(
             py_projects=py_projects,
-            dependencies_registry=dependencies_registry,
+            dependencies_registry=get_dependencies_from_project(workdir=project_root_path),
             #
             dry_run=dry_run,
             verbose=verbose,
@@ -72,22 +60,12 @@ def run_updater(
         ):
             logger.info("Updated pyproject.toml files successfully.")
 
-            if dry_run:
-                logger.info("Dry run. No changes were made.")
-            # run_uv_lock(workdir=project_root_path)
-            # logger.info("Updated dependencies successfully.")
-
-            elif no_sync:
-                run_uv_lock(
-                    workdir=project_root_path,
-                )
-            else:
-                # Because we want to re-check that all is ok.
-                run_uv_sync(
-                    workdir=project_root_path,
-                    uv_sync_mode=UvSyncMode.FROZEN,
-                )
-                logger.info("Synced dependencies successfully.")
+            check_updating_result(
+                project_root_path,
+                dry_run=dry_run,
+                #
+                no_sync=no_sync,
+            )
 
         else:
             msg = "No important changes detected. Rolling back to previous state."
