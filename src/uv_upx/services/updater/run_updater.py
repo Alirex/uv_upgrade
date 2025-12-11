@@ -3,11 +3,11 @@ import logging
 from typing import TYPE_CHECKING
 
 from uv_upx.services.dependencies_from_project import get_dependencies_from_project
+from uv_upx.services.dependency_up.handle_groups import handle_py_projects
 from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
-from uv_upx.services.handle_groups import handle_py_projects
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
 from uv_upx.services.toml import toml_load
-from uv_upx.services.updater.check_updating_result import check_updating_result
+from uv_upx.services.updater.finalize_updating import finalize_updating
 from uv_upx.services.updater.rollback_updater import rollback_updater
 from uv_upx.services.updater.update_lock_file import update_lock_file
 
@@ -60,7 +60,7 @@ def run_updater(
         ):
             logger.info("Updated pyproject.toml files successfully.")
 
-            check_updating_result(
+            finalize_updating(
                 project_root_path,
                 dry_run=dry_run,
                 #
