@@ -82,5 +82,6 @@ $ helpers collect-top-level-dependencies-from-project [OPTIONS]
 **Options**:
 
 * `-p, --project PATH`: Path to project root directory. Use current working directory if not specified.
-* `--only-complex-and-unhandled`: Collect only complex and unhandled dependencies
+* `--only-special-cases`: Collect only complex and unhandled dependencies
+* `--preserve-original-package-names`: Preserve original package names in pyproject.toml
 * `--help`: Show this message and exit.

@@ -219,6 +219,22 @@ If something goes wrong, it rolls back the changes to the `pyproject.toml` and `
 
 If nothing from pyproject.toml was changed, it rolls back the changes to the `uv.lock` file.
 
+So, only top-level dependencies changes trigger a `uv.lock` update.
+
+### Get special cases
+
+This allows you to see all the top-level dependencies that have some special constraints.
+Like:
+
+- ranges (`bla>=1.0.0,<2.0.0`)
+- not defined bounds (`bla`)
+- pinned dependencies (`bla==2.0.0`)
+- unhandled constraints (`bla<1.0.0`)
+
+```shell
+uv-upx helpers collect-top-level-dependencies-from-project --only-special-cases
+```
+
 ### Why?
 
 I needed this for my own projects.

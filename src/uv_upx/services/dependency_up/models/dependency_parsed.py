@@ -37,6 +37,15 @@ class VersionConstraint(BaseModel):
         return f"{self.operator}{self.version}"
 
 
+type DependencyString = str
+"""Dependency string from pyproject.toml
+
+Like:
+- requests[dev] >=1.2.3; python_version >= "3.10"
+- faker>=30.1
+"""
+
+
 class DependencyParsed(BaseModel):
     # https://peps.python.org/pep-0508/
 
