@@ -1,9 +1,9 @@
 [project]
 name = "uv-upx"
-version = "0.2.5"
+version = "0.3.1"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
-readme = "README.md"
+readme = "README.remotified.md"
 keywords = ["uv", "upgrade", "dependencies", "pyproject.toml", "automation", "cli"]
 
 license_files = ["LICENSE.txt"]
@@ -24,6 +24,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/Alirex/uv_upgrade"
+Repository = "https://github.com/Alirex/uv_upgrade"
+Documentation = "https://github.com/Alirex/uv_upgrade"
 
 
 [dependency-groups]
@@ -44,6 +46,8 @@ dev = [
     "vulture>=2.14",
     # Code complexity checker
     "radon>=6.0.1",
+    # Generate a Markdown file with better compatibility with PyPI
+    "mdremotifier>=1.0.0",
 ]
 
 [project.scripts]

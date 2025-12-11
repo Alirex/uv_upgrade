@@ -123,5 +123,6 @@ uv version --bump patch &&\
 uv sync --all-packages &&\
 find dist -type f -not -name '.gitignore' -delete &&\
 uv build &&\
-uv publish
+uv publish &&\
+echo https://pypi.org/project/uv-upx
 ```
