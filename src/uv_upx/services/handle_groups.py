@@ -1,14 +1,14 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
-from uv_upx.services.save_load_toml import save_toml
+from uv_upx.services.toml import toml_save
 from uv_upx.services.update_dependencies import ChangesList, IncludedDependencyGroup, update_dependencies
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
 
+    from uv_upx.services.dependencies_from_project import DependenciesRegistry
     from uv_upx.services.get_all_pyprojects import PyProjectsRegistry, PyProjectWrapper
-    from uv_upx.services.get_deps_from_project import DependenciesRegistry
 
 
 # https://docs.astral.sh/uv/concepts/projects/dependencies/
@@ -156,7 +156,7 @@ def handle_py_project(
         if dry_run:
             logger.info(f"[Dry Run] Changes detected in {pyproject_wrapper.path.as_uri()}, but not saving.")
         else:
-            save_toml(pyproject_wrapper.path, data)
+            toml_save(pyproject_wrapper.path, data)
             logger.info(f"Saved changes to {pyproject_wrapper.path.as_uri()}")
 
             for change in changes:

@@ -94,6 +94,19 @@ So, the main responsibility for dependencies resolution is on `uv`.
 
 It works with workspaces. At least for some basic cases.
 
+Respects:
+
+- both `members` and `exclude` sections.
+- glob-based patterns.
+
+### Normalize dependencies names
+
+For example:
+
+- `TOMLKit` -> `tomlkit`
+- `Pydantic` -> `pydantic`
+- `pyTEST_BenchMark` -> `pytest-benchmark`
+
 ### Updates simple dependencies
 
 Updates `>=` dependencies. Like `bla>=2.0.0`.

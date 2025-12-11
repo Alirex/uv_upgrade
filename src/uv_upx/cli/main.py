@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 
-from uv_upx.services.normalize_and_check_path_to_pyproject import normalize_and_check_path_to_project_root
+from uv_upx.services.normalize_paths import normalize_and_check_path_to_project_root
 from uv_upx.services.run_updater import run_updater
 
 app = typer.Typer(

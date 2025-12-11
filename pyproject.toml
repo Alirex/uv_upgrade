@@ -15,9 +15,9 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     # Better classes and data validation
-    "pydantic>=2.12.5",
+    "PyDantic>=2.12.5",
     # TOML parser and writer with preserved formatting
-    "tomlkit>=0.13.3",
+    "TOMLkit>=0.13.3",
     # CLI app framework
     "typer>=0.20.0",
 ]
@@ -34,7 +34,7 @@ dev = [
     # [typing]-[END]
     # [testing]-[BEGIN]
     "pytest>=9.0.2",
-    "pytest-benchmark>=5.2.3",
+    "pyTEST_benchmark>=5.2.3",
     # [testing]-[END]
     # Extra checker. Used by Zed.
     "basedpyright>=1.36.0",

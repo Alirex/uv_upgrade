@@ -1,38 +1,27 @@
-import pathlib
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
-from pydantic import BaseModel, ConfigDict
-from tomlkit import TOMLDocument
+from uv_upx.services.get_all_pyprojects.get_pyproject_paths_by_globs import get_pyproject_paths_by_globs
+from uv_upx.services.get_all_pyprojects.models import PyProjectsRegistry, PyProjectWrapper
+from uv_upx.services.normalize_paths import get_and_check_path_to_pyproject
+from uv_upx.services.toml import toml_load
 
-from uv_upx.services.get_pyproject_paths_by_globs import get_pyproject_paths_by_globs
-from uv_upx.services.normalize_and_check_path_to_pyproject import get_and_check_path_to_pyproject
-from uv_upx.services.save_load_toml import load_toml
-
-
-class PyProjectWrapper(BaseModel):
-    path: pathlib.Path
-    data: TOMLDocument
-
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-    )
+if TYPE_CHECKING:
+    import pathlib
 
 
-class PyProjectsRegistry(BaseModel):
-    items: list[PyProjectWrapper]
-
-
-def get_all_pyprojects(
+def get_all_pyprojects_by_project_root_path(
     project_root_path: pathlib.Path,
 ) -> PyProjectsRegistry:
     """Find all pyproject.toml files in the project tree.
 
     Use `workspaces` from uv.
+
+    Respect `exclude` patterns.
     """
     items: list[PyProjectWrapper] = []
 
     root_pyproject_path = get_and_check_path_to_pyproject(project_root_path)
-    root_pyproject_data = load_toml(root_pyproject_path)
+    root_pyproject_data = toml_load(root_pyproject_path)
     items.append(PyProjectWrapper(path=root_pyproject_path, data=root_pyproject_data))
 
     # Get workspaces_config
@@ -56,7 +45,7 @@ def get_all_pyprojects(
     result_paths_set = members_paths_set - exclude_paths_set
 
     for path in result_paths_set:
-        data = load_toml(path)
+        data = toml_load(path)
         items.append(PyProjectWrapper(path=path, data=data))
 
     return PyProjectsRegistry(items=items)

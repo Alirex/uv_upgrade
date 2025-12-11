@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from uv_upx.services.get_deps_from_project import DependencyName
+from uv_upx.services.package_name import PackageName
 
 
 class VersionConstraint(BaseModel):
@@ -11,8 +11,11 @@ class VersionConstraint(BaseModel):
 class DependencyParsed(BaseModel):
     # https://peps.python.org/pep-0508/
 
-    dependency_name: DependencyName
-    """Dependency name (e.g., requests)"""
+    original_name: str
+    """Original dependency name (e.g., reQuests)"""
+
+    dependency_name: PackageName
+    """Normalized dependency name (e.g., requests)"""
 
     extras: list[str] | None
     """Extras (e.g., [dev])"""
@@ -24,7 +27,7 @@ class DependencyParsed(BaseModel):
     """Environment marker (after ;)"""
 
     def get_full_spec(self) -> str:
-        parts: list[str] = [self.dependency_name]
+        parts: list[str] = [self.original_name]
         if self.extras:
             extras_str = ",".join(self.extras)
             parts.append(f"[{extras_str}]")

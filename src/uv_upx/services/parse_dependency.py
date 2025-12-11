@@ -1,5 +1,5 @@
 from uv_upx.models.dependency_parsed import DependencyParsed, VersionConstraint
-from uv_upx.services.get_deps_from_project import DependencyName
+from uv_upx.services.package_name import PackageName
 
 
 def parse_dependency(  # noqa: C901, PLR0912, PLR0915
@@ -82,7 +82,8 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
                 raise ValueError(msg)
 
     return DependencyParsed(
-        dependency_name=DependencyName(name),
+        original_name=name,
+        dependency_name=PackageName(name),
         extras=extras,
         version_constraints=version_constraints,
         marker=marker,
