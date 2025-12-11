@@ -7,11 +7,10 @@ from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_roo
 from uv_upx.services.handle_groups import handle_py_projects
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
 from uv_upx.services.rollback_updater import rollback_updater
-from uv_upx.services.run_uv_lock import (
+from uv_upx.services.run_uv_related import (
+    UvSyncMode,
     run_uv_lock,
-    run_uv_lock_upgrade,
     run_uv_sync,
-    run_uv_sync_upgrade,
 )
 from uv_upx.services.toml import toml_load
 
@@ -49,10 +48,16 @@ def run_updater(
 
     try:
         if no_sync:
-            run_uv_lock_upgrade(workdir=project_root_path)
+            run_uv_lock(
+                workdir=project_root_path,
+                upgrade=True,
+            )
         else:
             # Because we want to check build problems also.
-            run_uv_sync_upgrade(workdir=project_root_path)
+            run_uv_sync(
+                workdir=project_root_path,
+                uv_sync_mode=UvSyncMode.UPGRADE,
+            )
 
         dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
 
@@ -73,10 +78,15 @@ def run_updater(
             # logger.info("Updated dependencies successfully.")
 
             elif no_sync:
-                run_uv_lock(workdir=project_root_path)
+                run_uv_lock(
+                    workdir=project_root_path,
+                )
             else:
                 # Because we want to re-check that all is ok.
-                run_uv_sync(workdir=project_root_path)
+                run_uv_sync(
+                    workdir=project_root_path,
+                    uv_sync_mode=UvSyncMode.FROZEN,
+                )
                 logger.info("Synced dependencies successfully.")
 
         else:
