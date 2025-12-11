@@ -1,3 +1,4 @@
+import importlib
 import pathlib  # noqa: TC003
 from typing import Annotated
 
@@ -11,8 +12,19 @@ app = typer.Typer(
 )
 
 
+def version_callback(
+    value: bool,  # noqa: FBT001
+) -> None:
+    if value:
+        app_name = "uv-upx"
+        version: str = importlib.metadata.version(app_name)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
+        typer.echo(f"{app_name} {version}")
+        raise typer.Exit
+
+
+# noinspection PyUnusedLocal
 @app.command()
-def run(
+def run(  # noqa: PLR0913
     *,
     project_root_path: Annotated[
         pathlib.Path | None,
@@ -41,6 +53,16 @@ def run(
             "But, recommended to run with sync, for better chances for revealing problems.",
         ),
     ] = False,
+    #
+    version: Annotated[  # noqa: ARG001  # pyright: ignore[reportUnusedParameter]
+        bool | None,
+        typer.Option(
+            "--version",
+            help="Show version and exit.",
+            callback=version_callback,
+            is_eager=True,
+        ),
+    ] = None,
 ) -> None:
     """Update pyproject.toml dependencies to latest PyPI releases."""
     path = normalize_and_check_path_to_project_root(project_root_path)
