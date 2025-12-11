@@ -1,6 +1,6 @@
 [project]
 name = "uv-upx"
-version = "0.3.2"
+version = "0.3.3"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
 readme = "README.remotified.md"
@@ -26,6 +26,7 @@ dependencies = [
 Homepage = "https://github.com/Alirex/uv_upgrade"
 Repository = "https://github.com/Alirex/uv_upgrade"
 Documentation = "https://github.com/Alirex/uv_upgrade"
+Issues = "https://github.com/Alirex/uv_upgrade/issues"
 
 
 [dependency-groups]
