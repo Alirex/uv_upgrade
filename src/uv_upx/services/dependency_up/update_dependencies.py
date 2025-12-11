@@ -4,13 +4,13 @@ from uv_upx.services.dependency_up.update_dependency import update_dependency
 
 if TYPE_CHECKING:
     from uv_upx.services.dependencies_from_project import DependenciesRegistry
-    from uv_upx.services.dependency_up import IncludedDependencyGroup
     from uv_upx.services.dependency_up.models.changes_list import ChangesList
+    from uv_upx.services.dependency_up.models.dependencies_list import TomlBasedDependenciesList
 
 
 def update_dependencies(
     *,
-    deps_sequence_from_config: list[str] | list[str | IncludedDependencyGroup],
+    deps_sequence_from_config: TomlBasedDependenciesList,
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
     #

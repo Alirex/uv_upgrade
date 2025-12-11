@@ -42,7 +42,7 @@ else
 fi
 ```
 
-Or run with uvx:
+Or run advanced version with uvx:
 
 ```shell
 uvx uv-upx
@@ -76,7 +76,39 @@ After installation, you can run the tool from any directory.
 uv-upgrade
 ```
 
-Also, you can run it with the `--help` flag with more details.
+or
+
+```shell
+uv-upx upgrade run
+```
+
+It is the same. But `uv-upx` provides more features.
+
+## Get help
+
+You can run commands with the `--help` flag with more details.
+
+Exported versions:
+
+- for `uv-upgrade`:
+  - [cli_help_simple.md](docs_extra/cli_help_simple.md)
+- for `uv-upx`:
+  - [cli_help_advanced.md](docs_extra/cli_help_advanced.md)
+
+## Install CLI completion (Optional)
+
+This will install completion for the current shell. Available after restarting the shell.
+
+- for `uv-upgrade`:
+  - ```shell
+    uv-upgrade --install-completion
+    ```
+- for `uv-upx`:
+  - ```shell
+    uv-upx --install-completion
+    ```
+
+Note: relatively safe to run multiple times. It just adds extra newlines to your shell config when run multiple times.
 
 ## Notes
 
