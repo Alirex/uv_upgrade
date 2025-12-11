@@ -1,6 +1,8 @@
 exclude: |
   (?x)^(
-    \.idea/.*
+    \.idea/.*|
+    docs_extra/cli_help_simple.md|
+    docs_extra/cli_help_advanced.md
     )$
 
 repos:
@@ -63,6 +65,22 @@ repos:
       - id: pytest
         name: pytest
         entry: uv run pytest
+        language: system
+        pass_filenames: false
+
+      - id: generate-cli-help-simple
+        # Generate CLI help.
+        name: generate-cli-help-simple
+        entry: uv run typer uv_upx.cli.upgrade.main utils docs --output
+          docs_extra/cli_help_simple.md
+        language: system
+        pass_filenames: false
+
+      - id: generate-cli-help-advanced
+        # Generate CLI help.
+        name: generate-cli-help-advanced
+        entry: uv run typer uv_upx.cli.main utils docs --output
+          docs_extra/cli_help_advanced.md
         language: system
         pass_filenames: false
 

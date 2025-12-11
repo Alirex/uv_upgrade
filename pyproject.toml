@@ -47,8 +47,8 @@ dev = [
 ]
 
 [project.scripts]
-# For clarity
-uv-upgrade = "uv_upx:main"
+# For simplicity.
+uv-upgrade = "uv_upx:main_short"
 # For compatibility with uvx.
 uv-upx = "uv_upx:main"
 
