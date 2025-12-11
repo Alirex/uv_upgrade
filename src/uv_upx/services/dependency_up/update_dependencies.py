@@ -12,6 +12,7 @@ def update_dependencies(
     *,
     deps_sequence_from_config: TomlBasedDependenciesList,
     dependencies_registry: DependenciesRegistry,
+    #
     verbose: bool = False,
     #
     preserve_original_package_names: bool = False,
