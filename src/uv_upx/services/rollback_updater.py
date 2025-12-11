@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from uv_upx.services.run_uv_lock import run_uv_sync_frozen
+from uv_upx.services.run_uv_related import UvSyncMode, run_uv_sync
 from uv_upx.services.toml import toml_save
 
 if TYPE_CHECKING:
@@ -25,4 +25,7 @@ def rollback_updater(
         toml_save(py_project.path, py_project.data)
 
     if not no_sync:
-        run_uv_sync_frozen(workdir=uv_lock_path.parent)
+        run_uv_sync(
+            workdir=uv_lock_path.parent,
+            uv_sync_mode=UvSyncMode.FROZEN,
+        )
