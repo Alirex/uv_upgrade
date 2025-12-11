@@ -2,18 +2,16 @@ import copy
 import logging
 from typing import TYPE_CHECKING
 
-from uv_upx.services.get_all_pyprojects import get_all_pyprojects
-from uv_upx.services.get_deps_from_project import get_deps_from_project
+from uv_upx.services.dependencies_from_project import get_dependencies_from_project
+from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
 from uv_upx.services.handle_groups import handle_py_projects
-from uv_upx.services.normalize_and_check_path_to_pyproject import (
-    get_and_check_path_to_uv_lock,
-)
+from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
 from uv_upx.services.rollback_updater import rollback_updater
 from uv_upx.services.run_uv_lock import (
     run_uv_sync,
     run_uv_sync_upgrade,
 )
-from uv_upx.services.save_load_toml import load_toml
+from uv_upx.services.toml import toml_load
 
 if TYPE_CHECKING:
     import pathlib
@@ -28,10 +26,10 @@ def run_updater(
     logger = logging.getLogger(__name__)
 
     uv_lock_path = get_and_check_path_to_uv_lock(project_root_path)
-    uv_lock_data = load_toml(uv_lock_path)
+    uv_lock_data = toml_load(uv_lock_path)
     uv_lock_data_copy = copy.deepcopy(uv_lock_data)
 
-    py_projects = get_all_pyprojects(project_root_path)
+    py_projects = get_all_pyprojects_by_project_root_path(project_root_path)
     if verbose:
         logger.info(f"Found {len(py_projects.items)} pyproject.toml files in the workspace.")
         for py_project in py_projects.items:
@@ -46,7 +44,7 @@ def run_updater(
         # Because we want to check build problems also.
         run_uv_sync_upgrade(workdir=project_root_path)
 
-        dependencies_registry = get_deps_from_project(workdir=project_root_path)
+        dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
 
         if handle_py_projects(
             py_projects=py_projects,

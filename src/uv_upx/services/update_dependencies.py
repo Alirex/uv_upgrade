@@ -8,7 +8,7 @@ from uv_upx.models.dependency_parsed import DependencyParsed, VersionConstraint
 from uv_upx.services.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
-    from uv_upx.services.get_deps_from_project import DependenciesRegistry
+    from uv_upx.services.dependencies_from_project import DependenciesRegistry
 
 type IncludedDependencyGroup = dict[str, str]
 

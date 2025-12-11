@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from uv_upx.services.normalize_and_check_path_to_pyproject import NAME_OF_PYPROJECT_FILE
+from uv_upx.services.normalize_paths import NAME_OF_PYPROJECT_FILE
 
 if TYPE_CHECKING:
     import pathlib

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from uv_upx.services.run_uv_lock import run_uv_sync_frozen
-from uv_upx.services.save_load_toml import save_toml
+from uv_upx.services.toml import toml_save
 
 if TYPE_CHECKING:
     import pathlib
@@ -18,8 +18,8 @@ def rollback_updater(
     #
     py_projects: PyProjectsRegistry,
 ) -> None:
-    save_toml(uv_lock_path, uv_lock_data)
+    toml_save(uv_lock_path, uv_lock_data)
     for py_project in py_projects.items:
-        save_toml(py_project.path, py_project.data)
+        toml_save(py_project.path, py_project.data)
 
     run_uv_sync_frozen(workdir=uv_lock_path.parent)
