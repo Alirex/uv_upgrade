@@ -17,9 +17,12 @@ def rollback_updater(
     uv_lock_data: TOMLDocument,
     #
     py_projects: PyProjectsRegistry,
+    #
+    no_sync: bool = False,
 ) -> None:
     toml_save(uv_lock_path, uv_lock_data)
     for py_project in py_projects.items:
         toml_save(py_project.path, py_project.data)
 
-    run_uv_sync_frozen(workdir=uv_lock_path.parent)
+    if not no_sync:
+        run_uv_sync_frozen(workdir=uv_lock_path.parent)

@@ -1,52 +1,19 @@
 import copy
 import logging
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
-
-from uv_upx.models.dependency_parsed import DependencyParsed, VersionConstraint
-from uv_upx.services.parse_dependency import parse_dependency
+from uv_upx.services.dependency_up.constants.operators import (
+    VERSION_OPERATOR_I_GREATER_OR_EQUAL,
+    VERSION_OPERATORS_I_EXPLICIT_IGNORE,
+    VERSION_OPERATORS_I_PUT_IF_DIFFERENT,
+)
+from uv_upx.services.dependency_up.models.changes_list import ChangesItem, ChangesList
+from uv_upx.services.dependency_up.models.dependency_parsed import VersionConstraint
+from uv_upx.services.dependency_up.parse_dependency import parse_dependency
 
 if TYPE_CHECKING:
     from uv_upx.services.dependencies_from_project import DependenciesRegistry
-
-type IncludedDependencyGroup = dict[str, str]
-
-
-class ChangesItem(BaseModel):
-    from_item: DependencyParsed
-    to_item: DependencyParsed
-
-    def __str__(self) -> str:
-        return f"{self.from_item.get_full_spec()} -> {self.to_item.get_full_spec()}"
-
-
-type ChangesList = list[ChangesItem]
-
-# https://peps.python.org/pep-0440/#version-specifiers
-
-VERSION_OPERATOR_I_GREATER_OR_EQUAL: Final[str] = ">="
-
-VERSION_OPERATORS_I_PUT_IF_DIFFERENT: Final[set[str]] = {VERSION_OPERATOR_I_GREATER_OR_EQUAL}
-
-VERSION_OPERATORS_I_EXPLICIT_IGNORE: Final[set[str]] = {
-    # Pinned versions
-    "==",
-    "===",
-    #
-    # Upper bounds
-    "<",
-    "<=",
-    #
-    # May needed advanced logic here
-    "~=",
-    #
-    # Need to calculate a previous version. Skip for now.
-    ">",
-    #
-    # Special case
-    "!=",
-}
+    from uv_upx.services.dependency_up import IncludedDependencyGroup
 
 
 def update_dependencies(  # noqa: C901, PLR0912
@@ -54,6 +21,8 @@ def update_dependencies(  # noqa: C901, PLR0912
     deps_sequence_from_config: list[str] | list[str | IncludedDependencyGroup],
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Update the list of dependencies.
 
@@ -73,7 +42,10 @@ def update_dependencies(  # noqa: C901, PLR0912
                 logger.warning(f"Skipping non-string dependency: {dep}")
             continue
 
-        parsed = parse_dependency(dep)
+        parsed = parse_dependency(
+            dep,
+            preserve_original_package_names=preserve_original_package_names,
+        )
 
         if verbose:
             logger.info(f"Parsed dependency: {parsed}")

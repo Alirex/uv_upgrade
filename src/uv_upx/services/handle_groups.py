@@ -1,8 +1,8 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
+from uv_upx.services.dependency_up import ChangesList, IncludedDependencyGroup, update_dependencies
 from uv_upx.services.toml import toml_save
-from uv_upx.services.update_dependencies import ChangesList, IncludedDependencyGroup, update_dependencies
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
@@ -19,6 +19,8 @@ def handle_main_dependency_group(
     data: TOMLDocument,
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Check the main dependencies group."""
     logger = logging.getLogger(__name__)
@@ -37,6 +39,8 @@ def handle_main_dependency_group(
         deps_sequence_from_config=dependencies,  # pyright: ignore[reportUnknownArgumentType]
         dependencies_registry=dependencies_registry,
         verbose=verbose,
+        #
+        preserve_original_package_names=preserve_original_package_names,
     )
 
 
@@ -45,6 +49,8 @@ def handle_dependency_groups(
     data: TOMLDocument,
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Check the dependency-groups table.
 
@@ -54,6 +60,8 @@ def handle_dependency_groups(
         groups=data.get("dependency-groups", {}),  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         dependencies_registry=dependencies_registry,
         verbose=verbose,
+        #
+        preserve_original_package_names=preserve_original_package_names,
     )
 
 
@@ -62,6 +70,8 @@ def handle_optional_dependencies(
     data: TOMLDocument,
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Check the project.optional-dependencies table.
 
@@ -71,6 +81,8 @@ def handle_optional_dependencies(
         groups=data.get("project", {}).get("optional-dependencies", {}),  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         dependencies_registry=dependencies_registry,
         verbose=verbose,
+        #
+        preserve_original_package_names=preserve_original_package_names,
     )
 
 
@@ -79,6 +91,8 @@ def handle_dependency_groups_inner(
     groups: Any,  # noqa: ANN401
     dependencies_registry: DependenciesRegistry,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Check the dependency-groups table.
 
@@ -107,6 +121,8 @@ def handle_dependency_groups_inner(
             deps_sequence_from_config=group_val,
             dependencies_registry=dependencies_registry,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         )
         changes.extend(changes_local)
 
@@ -120,6 +136,8 @@ def handle_py_project(
     #
     dry_run: bool,
     verbose: bool,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Handle a single pyproject.toml file."""
     logger = logging.getLogger(__name__)
@@ -133,6 +151,8 @@ def handle_py_project(
             data=data,
             dependencies_registry=dependencies_registry,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         ),
     )
 
@@ -141,6 +161,8 @@ def handle_py_project(
             data=data,
             dependencies_registry=dependencies_registry,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         ),
     )
 
@@ -149,6 +171,8 @@ def handle_py_project(
             data=data,
             dependencies_registry=dependencies_registry,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         ),
     )
 
@@ -172,6 +196,8 @@ def handle_py_projects(
     #
     dry_run: bool,
     verbose: bool,
+    #
+    preserve_original_package_names: bool = False,
 ) -> ChangesList:
     """Handle multiple pyproject.toml files."""
     changes: ChangesList = []
@@ -182,6 +208,8 @@ def handle_py_projects(
             #
             dry_run=dry_run,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         )
 
         changes.extend(changes_local)

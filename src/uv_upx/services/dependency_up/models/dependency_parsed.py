@@ -11,23 +11,37 @@ class VersionConstraint(BaseModel):
 class DependencyParsed(BaseModel):
     # https://peps.python.org/pep-0508/
 
-    original_name: str
-    """Original dependency name (e.g., reQuests)"""
+    original_name: str | None = None
+    """Original dependency name (e.g., reQuests).
+
+    None if not preserved.
+    """
 
     dependency_name: PackageName
-    """Normalized dependency name (e.g., requests)"""
+    """Normalized dependency name (e.g., requests).
+
+    Needed for better search.
+    """
 
     extras: list[str] | None
     """Extras (e.g., [dev])"""
 
     version_constraints: list[VersionConstraint]
-    """Version constraints (e.g., >=1.2.3, ==4.5.6)"""
+    """Version constraints (e.g., `>=1.2.3`, `==4.5.6`)"""
 
     marker: str | None
     """Environment marker (after ;)"""
 
-    def get_full_spec(self) -> str:
-        parts: list[str] = [self.original_name]
+    def get_full_spec(
+        self,
+    ) -> str:
+        parts: list[str] = []
+
+        if self.original_name is not None:
+            parts.append(self.original_name)
+        else:
+            parts.append(str(self.dependency_name))
+
         if self.extras:
             extras_str = ",".join(self.extras)
             parts.append(f"[{extras_str}]")

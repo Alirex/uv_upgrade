@@ -1,9 +1,13 @@
-from uv_upx.models.dependency_parsed import DependencyParsed, VersionConstraint
+from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_I_ALL
+from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, VersionConstraint
 from uv_upx.services.package_name import PackageName
 
 
 def parse_dependency(  # noqa: C901, PLR0912, PLR0915
     dependency_string: str,
+    #
+    *,
+    preserve_original_package_names: bool = False,
 ) -> DependencyParsed:  # sourcery skip: low-code-quality
     dependency_string = dependency_string.strip()
     if not dependency_string:
@@ -32,7 +36,7 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
         version_part = main[j + 1 :].strip()
     else:
         # try to locate the start of version/operator tokens
-        ops = ["===", "==", "~=", "!=", "<=", ">=", "<", ">", "@"]
+        ops = VERSION_OPERATORS_I_ALL
         first_pos = None
         for op in ops:
             idx = main.find(op)
@@ -58,7 +62,7 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
             raise ValueError(msg)
 
         raw_parts = [p.strip() for p in version_part.split(",") if p.strip()]
-        op_candidates = ["===", "==", "~=", "!=", "<=", ">=", "<", ">"]
+        op_candidates = VERSION_OPERATORS_I_ALL
         for rp in raw_parts:
             token = rp.lstrip()
             matched = False
@@ -82,7 +86,7 @@ def parse_dependency(  # noqa: C901, PLR0912, PLR0915
                 raise ValueError(msg)
 
     return DependencyParsed(
-        original_name=name,
+        original_name=name if preserve_original_package_names else None,
         dependency_name=PackageName(name),
         extras=extras,
         version_constraints=version_constraints,

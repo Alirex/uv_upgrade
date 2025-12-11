@@ -8,6 +8,8 @@ from uv_upx.services.handle_groups import handle_py_projects
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
 from uv_upx.services.rollback_updater import rollback_updater
 from uv_upx.services.run_uv_lock import (
+    run_uv_lock,
+    run_uv_lock_upgrade,
     run_uv_sync,
     run_uv_sync_upgrade,
 )
@@ -20,8 +22,13 @@ if TYPE_CHECKING:
 def run_updater(
     *,
     project_root_path: pathlib.Path,
+    #
     dry_run: bool = False,
     verbose: bool = False,
+    #
+    preserve_original_package_names: bool = False,
+    #
+    no_sync: bool = False,
 ) -> None:
     logger = logging.getLogger(__name__)
 
@@ -41,8 +48,11 @@ def run_updater(
     rollback_message = "Rolling back to previous state because dry run is enabled."
 
     try:
-        # Because we want to check build problems also.
-        run_uv_sync_upgrade(workdir=project_root_path)
+        if no_sync:
+            run_uv_lock_upgrade(workdir=project_root_path)
+        else:
+            # Because we want to check build problems also.
+            run_uv_sync_upgrade(workdir=project_root_path)
 
         dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
 
@@ -52,15 +62,19 @@ def run_updater(
             #
             dry_run=dry_run,
             verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
         ):
             logger.info("Updated pyproject.toml files successfully.")
 
             if dry_run:
                 logger.info("Dry run. No changes were made.")
-            else:
-                # run_uv_lock(workdir=project_root_path)
-                # logger.info("Updated dependencies successfully.")
+            # run_uv_lock(workdir=project_root_path)
+            # logger.info("Updated dependencies successfully.")
 
+            elif no_sync:
+                run_uv_lock(workdir=project_root_path)
+            else:
                 # Because we want to re-check that all is ok.
                 run_uv_sync(workdir=project_root_path)
                 logger.info("Synced dependencies successfully.")
@@ -84,6 +98,8 @@ def run_updater(
                 uv_lock_data=uv_lock_data_copy,
                 #
                 py_projects=py_projects_copy,
+                #
+                no_sync=no_sync,
             )
             logger.info(rollback_message)
     except Exception as e:  # noqa: BLE001

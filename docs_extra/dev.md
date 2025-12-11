@@ -84,6 +84,7 @@ Useful after changing the hooks. Or just to check if everything is fine.
 For system-wide usage during development, run this command from the repository directory:
 
 ```shell
+cd $(git rev-parse --show-toplevel) &&\
 uv tool install --editable .
 ```
 
