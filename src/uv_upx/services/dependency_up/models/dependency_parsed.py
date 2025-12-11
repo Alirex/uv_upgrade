@@ -1,11 +1,33 @@
-from pydantic import BaseModel, Field
+from typing import Annotated
 
+from pydantic import AfterValidator, BaseModel, Field
+
+from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_I_ALL
 from uv_upx.services.package_name import PackageName
 
 
+def validate_version_value(value: str) -> str:
+    if not value.strip():
+        msg = "Version value cannot be empty or whitespace"
+        raise ValueError(msg)
+
+    if not value[0].isdigit():
+        msg = "Version value must start with a digit"
+        raise ValueError(msg)
+
+    return value
+
+
+def validate_operator(value: str) -> str:
+    if value not in VERSION_OPERATORS_I_ALL:
+        msg = f"Operator must be one of {VERSION_OPERATORS_I_ALL}"
+        raise ValueError(msg)
+    return value
+
+
 class VersionConstraint(BaseModel):
-    operator: str
-    version: str
+    operator: Annotated[str, AfterValidator(validate_operator)]
+    version: Annotated[str, AfterValidator(validate_version_value)]
 
     def __str__(self) -> str:
         return f"{self.operator}{self.version}"
@@ -26,7 +48,7 @@ class DependencyParsed(BaseModel):
     Needed for better search.
     """
 
-    extras: list[str] | None = None
+    extras: list[str] = Field(default_factory=list)
     """Extras (e.g., [dev])"""
 
     version_constraints: list[VersionConstraint] = Field(default_factory=list)

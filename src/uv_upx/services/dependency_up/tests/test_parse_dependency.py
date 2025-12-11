@@ -85,7 +85,7 @@ from uv_upx.services.package_name import PackageName
         ),
     ],
 )
-def test_package_name_normalization(
+def test_parse_dependency(
     dependency_string: str,
     expected: DependencyParsed,
 ) -> None:

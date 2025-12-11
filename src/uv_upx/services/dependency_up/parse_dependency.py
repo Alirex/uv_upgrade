@@ -1,6 +1,44 @@
+import re
+from re import Pattern
+from typing import Final
+
 from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_I_ALL
 from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, VersionConstraint
 from uv_upx.services.package_name import PackageName
+
+VERSION_OPERATORS_AS_OR: Final[str] = "|".join(sorted(VERSION_OPERATORS_I_ALL, key=lambda x: len(x), reverse=True))
+
+# https://peps.python.org/pep-0440/#version-specifiers
+PATTERN_I_DEPENDENCY_STRING: Final[Pattern[str]] = re.compile(
+    rf"""^
+\s*
+(?P<name>[A-Za-z0-9_.+-]+)                       # package name (letters, digits, _ . + -)
+\s*
+(?:\[(?P<extras>[^\]]+)\])?                       # optional extras inside [...]
+\s*
+(?P<version_constraints>                           # optional version constraints (comma separated)
+    (?:
+        (?:(?:{VERSION_OPERATORS_AS_OR})\s*[^,;\[]+)    # single constraint starting with an operator
+        (?:\s*,\s*(?:(?:{VERSION_OPERATORS_AS_OR})\s*[^,;\[]+))*  # optional additional constraints
+    )
+)?
+\s*
+(?:;\s*(?P<marker>.*))?                           # optional environment marker after ';'
+$
+""",
+    re.IGNORECASE | re.VERBOSE,
+)
+
+PATTERN_I_VERSION_CONSTRAINT: Final[Pattern[str]] = re.compile(
+    rf"""^
+\s*
+(?P<operator>{VERSION_OPERATORS_AS_OR})          # version operator
+\s*
+(?P<version>[^{VERSION_OPERATORS_AS_OR}]+)                # version value
+\s*$
+""",
+    re.IGNORECASE | re.VERBOSE,
+)
 
 
 def parse_dependency(
@@ -10,54 +48,23 @@ def parse_dependency(
     preserve_original_package_names: bool = False,
 ) -> DependencyParsed:  # sourcery skip: low-code-quality
     dependency_string = dependency_string.strip()
-    if not dependency_string:
-        msg = "Empty dependency string"
+
+    match = PATTERN_I_DEPENDENCY_STRING.match(dependency_string)
+
+    if not match:
+        msg = f"Invalid dependency string: {dependency_string}"
         raise ValueError(msg)
 
-    # split off environment marker (after ';')
-    parts = dependency_string.split(";", 1)
-    main = parts[0].strip()
-    marker = parts[1].strip() if len(parts) > 1 else None
+    name = match.group("name")
 
-    # parse name and extras
-    name = main
-    extras: list[str] | None = None
-    version_part = ""
+    extras_raw = match.group("extras") or ""
+    extras = [item_ for item in extras_raw.split(",") if (item_ := item.strip())]
 
-    if "[" in main:
-        i = main.find("[")
-        j = main.find("]", i)
-        if j == -1:
-            msg = f"Invalid dependency string: {main}"
-            raise ValueError(msg)
-        name = main[:i].strip()
-        extras_str = main[i + 1 : j].strip()
-        extras = [e.strip() for e in extras_str.split(",") if e.strip()] or None
-        version_part = main[j + 1 :].strip()
-    else:
-        # try to locate the start of version/operator tokens
-        ops = VERSION_OPERATORS_I_ALL
-        first_pos = None
-        for op in ops:
-            idx = main.find(op)
-            if idx != -1 and (first_pos is None or idx < first_pos):
-                first_pos = idx
-        if first_pos is not None:
-            name = main[:first_pos].strip()
-            version_part = main[first_pos:].strip()
-        else:
-            name = main.strip()
-            version_part = ""
+    version_constraints_raw = match.group("version_constraints") or ""
+    version_constraints = parse_version_constraints(version_constraints_raw)
 
-    if not name:
-        msg = f"Invalid dependency string: {main}"
-        raise ValueError(msg)
-
-    try:
-        version_constraints = parse_version_constraints(version_part)
-    except ValueError as e:
-        msg = f"Invalid dependency string: {main}"
-        raise ValueError(msg) from e
+    marker_raw = match.group("marker")
+    marker = marker_raw.strip() if marker_raw else None
 
     return DependencyParsed(
         original_name=name if preserve_original_package_names else None,
@@ -74,34 +81,33 @@ def parse_version_constraints(
     # parse version constraints (comma separated)
     version_constraints: list[VersionConstraint] = []
 
-    if version_part:
-        # do not attempt to parse direct URL / VCS refs (start with '@')
-        if version_part.startswith("@"):
-            msg = f"Invalid version_part string: '{version_part}'"
+    if not version_part:
+        return version_constraints
+
+    # do not attempt to parse direct URL / VCS refs (start with '@')
+    if version_part.startswith("@"):
+        msg = f"Invalid version_part string: '{version_part}'"
+        raise ValueError(msg)
+
+    raw_parts = [p.strip() for p in version_part.split(",") if p.strip()]
+
+    for raw_part in raw_parts:
+        match_vc = PATTERN_I_VERSION_CONSTRAINT.match(raw_part.strip())
+        if not match_vc:
+            msg = f"Invalid version constraint: '{raw_part}'"
             raise ValueError(msg)
 
-        raw_parts = [p.strip() for p in version_part.split(",") if p.strip()]
-        op_candidates = VERSION_OPERATORS_I_ALL
-        for rp in raw_parts:
-            token = rp.lstrip()
-            matched = False
-            for op in op_candidates:
-                if token.startswith(op):
-                    ver = token[len(op) :].strip().strip("\"'")
-                    version_constraints.append(VersionConstraint(operator=op, version=ver))
-                    matched = True
-                    break
-            if not matched:
-                # allow a bit of tolerance for leading space before the operator
-                stripped = token.lstrip()
-                for op in op_candidates:
-                    if stripped.startswith(op):
-                        ver = stripped[len(op) :].strip().strip("\"'")
-                        version_constraints.append(VersionConstraint(operator=op, version=ver))
-                        matched = True
-                        break
-            if not matched:
-                msg = f"Invalid version_part string: '{version_part}'"
-                raise ValueError(msg)
+        operator = match_vc.group("operator")
+        version = match_vc.group("version")
+
+        if operator not in VERSION_OPERATORS_I_ALL:
+            msg = f"Invalid version operator: '{operator}'"
+            raise ValueError(msg)
+
+        version_constraint = VersionConstraint(
+            operator=operator,
+            version=version,
+        )
+        version_constraints.append(version_constraint)
 
     return version_constraints

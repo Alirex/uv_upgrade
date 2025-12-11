@@ -43,7 +43,7 @@ from uv_upx.services.dependency_up.update_dependency import handle_version_const
         ),
     ],
 )
-def test_package_name_normalization(
+def test_handle_version_constraint(
     version_constraint: VersionConstraint,
     version_new: str,
     expected: str,
