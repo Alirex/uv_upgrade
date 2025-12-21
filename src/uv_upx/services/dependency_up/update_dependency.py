@@ -5,50 +5,31 @@ from typing import TYPE_CHECKING, Any
 from uv_upx.services.dependency_up.constants.operators import (
     VERSION_OPERATOR_I_GREATER_OR_EQUAL,
     VERSION_OPERATORS_I_EXPLICIT_IGNORE,
+    VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE,
     VERSION_OPERATORS_I_PUT_IF_DIFFERENT,
 )
 from uv_upx.services.dependency_up.models.changes_list import ChangesItem
-from uv_upx.services.dependency_up.models.dependency_parsed import VersionConstraint
-from uv_upx.services.dependency_up.parse_dependency import parse_dependency
+from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, VersionConstraint
+from uv_upx.services.upgrade_profile import UpgradeProfile
 
 if TYPE_CHECKING:
     from uv_upx.services.dependencies_from_project import DependenciesRegistry, Version
-    from uv_upx.services.dependency_up import IncludedDependencyGroup
 
 
-def update_dependency(
+def update_dependency_v2(
     *,
     dependencies_registry: DependenciesRegistry,
-    dependency: str | IncludedDependencyGroup,
+    parsed: DependencyParsed,
     #
-    verbose: bool = False,
-    #
-    preserve_original_package_names: bool = False,
+    profile: UpgradeProfile,
 ) -> ChangesItem | None:
-    logger = logging.getLogger(__name__)
-
-    if verbose:
-        logger.info(f"Parsing dependency: {dependency}")
-
-    if not isinstance(dependency, str):
-        if verbose:
-            # https://docs.astral.sh/uv/concepts/projects/dependencies/#nesting-groups
-            logger.warning(f"Skipping non-string dependency: {dependency}")
-        return None
-
-    parsed = parse_dependency(
-        dependency,
-        preserve_original_package_names=preserve_original_package_names,
-    )
-
-    if verbose:
-        logger.info(f"Parsed dependency: {parsed}")
-
+    """Updates the dependency version based on registry lookup."""
     try:
         version_new = dependencies_registry[parsed.package_name]
     except KeyError:
         # Note: raise error, because it now we have all the dependencies in the registry.
         msg = f"Dependency not found in the registry: {parsed.package_name}"
+        logger = logging.getLogger(__name__)
         logger.error(msg)  # noqa: TRY400
         return None
 
@@ -60,8 +41,7 @@ def update_dependency(
             version_constraint=version_constraint,
             version_new=version_new,
             #
-            verbose=verbose,
-            dependency=dependency,
+            profile=profile,
         )
         if is_has_changes_local:
             is_has_changes = True
@@ -88,6 +68,8 @@ def handle_version_constraint(
     version_constraint: VersionConstraint,
     version_new: Version,
     #
+    profile: UpgradeProfile = UpgradeProfile.DEFAULT,
+    #
     verbose: bool = False,
     dependency: Any | None = None,  # noqa: ANN401
 ) -> IsHasChanges:
@@ -100,9 +82,20 @@ def handle_version_constraint(
     is_has_changes = False
     if version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT:
         # TODO: (?) Implement better version comparison logic here
-        if version_new != version_constraint.version:
+        if version_constraint.version != version_new:
             version_constraint.version = version_new
             is_has_changes = True
+
+    elif (profile is UpgradeProfile.WITH_PINNED) and (
+        version_constraint.operator in VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE
+    ):
+        # sourcery skip: hoist-similar-statement-from-if, hoist-statement-from-if
+        if version_constraint.version != version_new:
+            version_constraint.version = version_new
+            is_has_changes = True
+        # else:
+        #     # Note: Workaround. Because we need to roll back the operator change.
+        #     is_has_changes = True
 
     elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
         if verbose and dependency:

@@ -105,10 +105,27 @@ This will install completion for the current shell. Available after restarting t
   - ```shell
     uv-upgrade --install-completion
     ```
+
+  ```
+
+  ```
+
+  ```
+
+  ```
+
 - for `uv-upx`:
   - ```shell
     uv-upx --install-completion
     ```
+
+  ```
+
+  ```
+
+  ```
+
+  ```
 
 Note: relatively safe to run multiple times. It just adds extra newlines to your shell config when run multiple times.
 
@@ -223,6 +240,49 @@ If nothing from pyproject.toml was changed, it rolls back the changes to the `uv
 
 So, only top-level dependencies changes trigger a `uv.lock` update.
 
+### Upgrade `equal`/`pinned` dependencies
+
+Honestly, I think it's insecure to upgrade pinned dependencies automatically.
+Because they must be pinned for a reason.
+
+For applications that require strict control of dependencies, maybe better to use `frozen` mode of `uv sync`.
+
+But for someone it can be useful to upgrade pinned dependencies automatically.
+
+And we can do it.
+
+```shell
+uv-upgrade --profile with_pinned
+```
+
+It handles only `equal` (`==`) and NOT `strictly equal` (`===`) operators.
+
+So, even in this mode, it won't change `bla===2.0.0`.
+
+Under the hood it:
+
+- collect all top-level dependencies information
+- changes `==` version constraints to `>=`
+- runs the standard upgrade process by `uv`
+- upgrade `pyproject.toml` files accordingly with returning `==` constraints back
+
+Note: more `upgrade` profiles can be added later. Or/and custom verbose `features` options.
+
+Note: Can be combined with `--interactive` mode.
+
+### Interactive mode
+
+You can run the tool in interactive mode.
+
+You must `Accept` or `Reject` each proposed change.
+
+```shell
+uv-upgrade --interactive
+```
+
+Demo example:
+![demo_interactive.png](docs_extra/images/demo_interactive.png)
+
 ### Get special cases
 
 This allows you to see all the top-level dependencies that have some special constraints.
@@ -230,7 +290,7 @@ Like:
 
 - ranges (`bla>=1.0.0,<2.0.0`)
 - not defined bounds (`bla`)
-- pinned dependencies (`bla==2.0.0`)
+- equal/pinned dependencies (`bla==2.0.0`)
 - unhandled constraints (`bla<1.0.0`)
 
 ```shell

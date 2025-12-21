@@ -3,9 +3,12 @@ import pathlib
 from pydantic import BaseModel, ConfigDict
 from tomlkit import TOMLDocument
 
+type PathToPyprojectToml = pathlib.Path
+"""Path to a pyproject.toml file."""
+
 
 class PyProjectWrapper(BaseModel):
-    path: pathlib.Path
+    path: PathToPyprojectToml
     data: TOMLDocument
 
     model_config = ConfigDict(
