@@ -6,6 +6,7 @@ import typer
 
 from uv_upx.services.normalize_paths import normalize_and_check_path_to_project_root
 from uv_upx.services.updater import run_updater
+from uv_upx.services.upgrade_profile import UpgradeProfile
 
 app = typer.Typer(
     pretty_exceptions_enable=False,
@@ -55,6 +56,22 @@ def run(  # noqa: PLR0913
         ),
     ] = False,
     #
+    profile: Annotated[
+        UpgradeProfile | None,
+        typer.Option(
+            "--profile",
+            help="Which profile to use when upgrading dependencies. (Experimental feature)",
+        ),
+    ] = None,
+    #
+    interactive: Annotated[
+        bool,
+        typer.Option(
+            "--interactive",
+            help="Enable interactive mode for selecting updates. (Experimental feature)",
+        ),
+    ] = False,
+    #
     version: Annotated[  # noqa: ARG001  # pyright: ignore[reportUnusedParameter]
         bool | None,
         typer.Option(
@@ -75,4 +92,8 @@ def run(  # noqa: PLR0913
         preserve_original_package_names=preserve_original_package_names,
         #
         no_sync=no_sync,
+        #
+        interactive=interactive,
+        #
+        profile=profile or UpgradeProfile.get_default(),
     )

@@ -12,14 +12,16 @@ authors = [
     { name = "Alirex", email = "alirex.prime@gmail.com" }
 ]
 
-requires-python = ">=3.14"
+requires-python = ">=3.14.2"
 dependencies = [
     # Better classes and data validation
     "pydantic>=2.12.5",
     # TOML parser and writer with preserved formatting
     "tomlkit>=0.13.3",
     # CLI app framework
-    "typer>=0.20.0",
+    "typer>=0.20.1",
+    # CLI interactive features
+    "prompt-toolkit>=3.0.52",
 ]
 
 [project.urls]
@@ -33,7 +35,7 @@ Issues = "https://github.com/Alirex/uv_upgrade/issues"
 dev = [
     # [typing]-[BEGIN]
     # Static type checker
-    "mypy>=1.19.0",
+    "mypy>=1.19.1",
     # [typing]-[END]
     # [testing]-[BEGIN]
     "pytest>=9.0.2",
@@ -62,26 +64,26 @@ requires = ["uv_build>=0.9.15,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.poe.tasks]
-pca= [
-    {cmd = "prek run --all-files"},
+pca = [
+    { cmd = "prek run --all-files" },
 ]
 
 # Run with: poe metrics or uv run poe metrics
 # Check code quality: dead code, complexity, and maintainability
 metrics = [
-    {cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests"},
-    {cmd = "radon cc . -a -nb"},
-    {cmd = "radon mi . -nb"}
+    { cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests" },
+    { cmd = "radon cc . -a -nb" },
+    { cmd = "radon mi . -nb" }
 ]
 
 # Run with: poe quality or uv run poe quality
 # Full quality check: format, lint, type check, and metrics
 quality = [
-    {cmd = "ruff format ."},
-    {cmd = "ruff check . --fix"},
-    {cmd = "basedpyright --level error"},
-    {cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests"},
-    {cmd = "radon cc . -a -nb"}
+    { cmd = "ruff format ." },
+    { cmd = "ruff check . --fix" },
+    { cmd = "basedpyright --level error" },
+    { cmd = "vulture . --min-confidence 80 --exclude .venv,build,dist,docs,scripts,tests" },
+    { cmd = "radon cc . -a -nb" }
 ]
 
 

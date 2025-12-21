@@ -62,6 +62,7 @@ def collect_top_level_dependencies(
     for py_project in py_projects.items:
         is_py_project_info_shown = False
 
+        # Iterates dependencies; prints project, group, and dependency info
         for group in collect_from_py_project(py_project.data):
             is_group_title_shown = False
 

@@ -8,7 +8,12 @@ class ChangesItem(BaseModel):
     to_item: DependencyParsed
 
     def __str__(self) -> str:
-        return f"{self.from_item.get_full_spec()} -> {self.to_item.get_full_spec()}"
+        return (
+            f"{self.from_item.get_name_with_extras()}: "
+            f"{self.from_item.get_partial_spec()}"
+            f" -> "
+            f"{self.to_item.get_partial_spec()}"
+        )
 
 
 type ChangesList = list[ChangesItem]

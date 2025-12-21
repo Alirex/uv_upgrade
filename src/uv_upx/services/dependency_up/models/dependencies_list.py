@@ -7,4 +7,6 @@ type TomlBasedDependenciesList = Array | list[DependencyString] | list[Dependenc
 """List of dependencies from TOML document
 
 Data needed to be changed directly in this list to preserve comments.
+
+This is a reference to the part of the source TOML document.
 """
