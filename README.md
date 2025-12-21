@@ -110,18 +110,10 @@ This will install completion for the current shell. Available after restarting t
 
   ```
 
-  ```
-
-  ```
-
 - for `uv-upx`:
   - ```shell
     uv-upx --install-completion
     ```
-
-  ```
-
-  ```
 
   ```
 
@@ -281,6 +273,7 @@ uv-upgrade --interactive
 ```
 
 Demo example:
+
 ![demo_interactive.png](docs_extra/images/demo_interactive.png)
 
 ### Get special cases
