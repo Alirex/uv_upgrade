@@ -101,23 +101,17 @@ Exported versions:
 
 This will install completion for the current shell. Available after restarting the shell.
 
-- for `uv-upgrade`:
-  - ```shell
-    uv-upgrade --install-completion
-    ```
+for `uv-upgrade`:
 
-  ```
+```shell
+uv-upgrade --install-completion
+```
 
-  ```
+for `uv-upx`:
 
-- for `uv-upx`:
-  - ```shell
-    uv-upx --install-completion
-    ```
-
-  ```
-
-  ```
+```shell
+uv-upx --install-completion
+```
 
 Note: relatively safe to run multiple times. It just adds extra newlines to your shell config when run multiple times.
 
