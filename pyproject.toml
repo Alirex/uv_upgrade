@@ -19,9 +19,11 @@ dependencies = [
     # TOML parser and writer with preserved formatting
     "tomlkit>=0.13.3",
     # CLI app framework
-    "typer>=0.20.1",
+    "typer>=0.21.1",
     # CLI interactive features
     "prompt-toolkit>=3.0.52",
+    # Rust-like result type for Python.
+    "safe-result>=4.0.3",
 ]
 
 [project.urls]
@@ -42,9 +44,9 @@ dev = [
     "pytest-benchmark>=5.2.3",
     # [testing]-[END]
     # Extra checker. Used by Zed.
-    "basedpyright>=1.36.1",
+    "basedpyright>=1.37.1",
     # Task runner
-    "poethepoet>=0.38.0",
+    "poethepoet>=0.40.0",
     # Dead code checker
     "vulture>=2.14",
     # Code complexity checker

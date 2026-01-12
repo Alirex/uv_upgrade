@@ -1,9 +1,12 @@
 import logging
 from typing import TYPE_CHECKING
 
+from safe_result import Err, Ok
+
 from uv_upx.services.dependencies_from_project import get_dependencies_from_project
 from uv_upx.services.dependency_up.handle_groups import handle_py_projects_v2
 from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
+from uv_upx.services.local_segments.exceptions import NonEmptyLocalSegmentsError
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
 from uv_upx.services.parse_v2.change_pinned_constraints import change_pinned_constraints
 from uv_upx.services.parse_v2.collect_dependencies import collect_top_level_dependencies
@@ -17,7 +20,7 @@ if TYPE_CHECKING:
     import pathlib
 
 
-def run_updater(  # noqa: PLR0913
+def run_updater(  # noqa: C901, PLR0913
     *,
     project_root_path: pathlib.Path,
     #
@@ -66,9 +69,35 @@ def run_updater(  # noqa: PLR0913
         )
 
     try:
-        update_lock_file(
+        match update_lock_file(
             project_root_path,
-        )
+        ):
+            case Ok():
+                pass
+            case Err(NonEmptyLocalSegmentsError()):
+                # Note: Workaround for dependencies with local segments.
+                logger.error(
+                    "Cannot proceed with pinned profile because there are local segments present."
+                    " We rollback and try again with pinning constraints with local segments.",
+                )
+
+                rollback_updater(
+                    rollback_data=rollback_data,
+                    #
+                    no_sync=no_sync,
+                )
+
+                change_pinned_constraints(
+                    collected_top_level_dependencies=collected_top_level_dependencies,
+                    is_ignore_local_segments=True,
+                )
+
+                update_lock_file(
+                    project_root_path,
+                ).unwrap()
+
+            case Err(e):
+                raise e  # noqa: TRY301
 
         dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
 
@@ -93,7 +122,7 @@ def run_updater(  # noqa: PLR0913
                 profile=profile,
                 #
                 interactive=interactive,
-            )
+            ).unwrap()
 
         else:
             msg = "No important changes detected. Rolling back to previous state."
