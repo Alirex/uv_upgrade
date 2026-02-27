@@ -63,27 +63,96 @@ repos:
   - repo: local
     # Hooks with local scripts.
     hooks:
+      # Rust hooks. Possible examples:
+      # https://github.com/j178/prefligit/blob/master/.pre-commit-config.yaml
+      - id: rust-clippy
+        name: Rust clippy
+        description: Run cargo clippy on files included in the commit.
+        # Installed with rustup
+        # https://rust-lang.github.io/rustup/concepts/components.html
+
+        # Rules groups: https://doc.rust-lang.org/clippy/index.html
+        # Levels: https://doc.rust-lang.org/rustc/lints/levels.html
+        # Command example: https://doc.rust-lang.org/clippy/continuous_integration/travis.html
+
+        # Note: used options from "cargo check" command for targets/packages
+        # https://doc.rust-lang.org/cargo/commands/cargo-check.html
+
+        # entry: cargo clippy --all-targets --all-features --fix --allow-dirty -- -D clippy::all
+
+        # "-D": A 'deny' lint produces an error if you violate it
+        # "-D clippy::all": Enable all lints (Deny to violate for all rules)
+        # "--all-targets": Check all targets (default: the package and its dependencies) (don't use during rustcamp)
+        # "--all-features": Check all available features
+        # "--fix": Automatically apply suggestions
+        # "--allow-dirty": For run also on non-committed files
+        # "--allow-staged": For run also on staged files
+        entry: cargo clippy --all-features --fix --allow-dirty --allow-staged --
+          -D clippy::all
+        pass_filenames: false
+        types: [ file, rust ]
+        language: system
+
+      - id: rust-format
+        # Note: Run after linter, because it can change the file.
+        name: Rust format
+        description: Run cargo fmt on files included in the commit.
+        # Installed with rustup
+        # https://rust-lang.github.io/rustup/concepts/components.html
+
+        # Command example: https://github.com/rust-lang/rustfmt?tab=readme-ov-file#checking-style-on-a-ci-server
+
+        # "--all": Format all files in the workspace
+        entry: cargo fmt --
+        pass_filenames: true
+        types: [ file, rust ]
+        language: system
+
+      - id: rust-build
+        # Note: Run after linter and formatter, because it can change the file.
+        name: Rust build
+        description: Run cargo build on files included in the commit.
+        # Installed with rustup
+        # https://rust-lang.github.io/rustup/concepts/components.html
+
+        # Command example: https://doc.rust-lang.org/cargo/commands/cargo-build.html
+
+        # "--all": Build all packages in the workspace
+        entry: cargo build --
+        types: [ file, rust ]
+        pass_filenames: false
+        language: system
+
+      - id: rust-cli-doc
+        name: Rust CLI doc
+        description: Generate markdown documentation for CLI applications.
+        entry: cargo run -- cli-helpers export-cli-help --output docs_extra/cli_help_advanced.md
+        types: [ file, rust ]
+        pass_filenames: false
+        language: system
+
+
       - id: pytest
         name: pytest
         entry: uv run pytest
         language: system
         pass_filenames: false
 
-      - id: generate-cli-help-simple
-        # Generate CLI help.
-        name: generate-cli-help-simple
-        entry: uv run typer uv_upx.cli.upgrade.main utils docs --output
-          docs_extra/cli_help_simple.md
-        language: system
-        pass_filenames: false
-
-      - id: generate-cli-help-advanced
-        # Generate CLI help.
-        name: generate-cli-help-advanced
-        entry: uv run typer uv_upx.cli.main utils docs --output
-          docs_extra/cli_help_advanced.md
-        language: system
-        pass_filenames: false
+#      - id: generate-cli-help-simple
+#        # Generate CLI help.
+#        name: generate-cli-help-simple
+#        entry: uv run typer uv_upx.cli.upgrade.main utils docs --output
+#          docs_extra/cli_help_simple.md
+#        language: system
+#        pass_filenames: false
+#
+#      - id: generate-cli-help-advanced
+#        # Generate CLI help.
+#        name: generate-cli-help-advanced
+#        entry: uv run typer uv_upx.cli.main utils docs --output
+#          docs_extra/cli_help_advanced.md
+#        language: system
+#        pass_filenames: false
 
       - id: basedpyright
         # Check Python code style.

@@ -1,34 +1,23 @@
 # Dev
 
-## Uv install or update
+## Rust install or update
 
-https://docs.astral.sh/uv/getting-started/installation/
-
-```bash
-if ! command -v uv &> /dev/null; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh;
-else
-    uv self update;
-fi
-
-uv --version
-```
-
-## Ruff install or update
-
-https://docs.astral.sh/ruff/installation/
+https://www.rust-lang.org/tools/install
 
 ```bash
-if ! command -v ruff &> /dev/null; then
-    uv tool install ruff
+if ! command -v rustc &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -LsSf https://sh.rustup.rs | sh
 else
-    uv tool upgrade ruff
+    rustup update
 fi
 
-ruff --version
+rustc --version
 ```
+
 
 ## Install prek for pre-commit hooks
+
+https://github.com/j178/prek?tab=readme-ov-file#installation
 
 Needed for automatic linting.
 
@@ -81,23 +70,42 @@ Useful after changing the hooks. Or just to check if everything is fine.
 
 ## Update dependencies
 
-### Install/Update updater
+### Check available tools
 
 ```shell
-if ! command -v uv-upx &> /dev/null; then
-    uv tool install uv-upx
-else
-    uv tool upgrade uv-upx
-fi
-
-uv-upgrade --version
+cargo install --list
 ```
 
-### Update dependencies
+### Install cargo-update
+
+Updater for system-wide cargo packages.
 
 ```shell
-cd $(git rev-parse --show-toplevel) &&\
-uv-upgrade
+if ! command -v cargo-install-update &> /dev/null; then
+    cargo install cargo-update
+else
+  cargo install-update cargo-update
+fi
+
+cargo-install-update --version
+```
+
+### Install cargo-edit
+
+```bash
+if ! command -v cargo-upgrade &> /dev/null; then
+    cargo install cargo-edit
+else
+  cargo install-update cargo-edit
+fi
+
+cargo-upgrade --version
+```
+
+### Upgrade dependencies
+
+```shell
+cargo upgrade
 ```
 
 ## Install app system-wide in Development mode
@@ -121,8 +129,8 @@ and publish to PyPI.
 cd $(git rev-parse --show-toplevel) &&\
 uv version --bump patch &&\
 uv sync --all-packages &&\
-find dist -type f -not -name '.gitignore' -delete &&\
-uv build &&\
-uv publish &&\
+find dist -type f -not -name '.gitignore' -delete ;\
+uv build --all-packages &&\
+uv publish --username __token__ --password ${PYPI_TOKEN} &&\
 echo https://pypi.org/project/uv-upx
 ```
