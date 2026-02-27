@@ -1,6 +1,6 @@
 [project]
 name = "uv-upx"
-version = "0.4.3"
+version = "0.4.5"
 
 description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
 readme = "README.remotified.md"
@@ -13,18 +13,18 @@ authors = [
 ]
 
 requires-python = ">=3.14.2"
-dependencies = [
-    # Better classes and data validation
-    "pydantic>=2.12.5",
-    # TOML parser and writer with preserved formatting
-    "tomlkit>=0.13.3",
-    # CLI app framework
-    "typer>=0.21.1",
-    # CLI interactive features
-    "prompt-toolkit>=3.0.52",
-    # Rust-like result type for Python.
-    "safe-result>=4.0.3",
-]
+#dependencies = [
+#    # Better classes and data validation
+#    "pydantic>=2.12.5",
+#    # TOML parser and writer with preserved formatting
+#    "tomlkit>=0.13.3",
+#    # CLI app framework
+#    "typer>=0.21.1",
+#    # CLI interactive features
+#    "prompt-toolkit>=3.0.52",
+#    # Rust-like result type for Python.
+#    "safe-result>=4.0.3",
+#]
 
 [project.urls]
 Homepage = "https://github.com/Alirex/uv_upgrade"
@@ -33,37 +33,66 @@ Documentation = "https://github.com/Alirex/uv_upgrade"
 Issues = "https://github.com/Alirex/uv_upgrade/issues"
 
 
-[dependency-groups]
-dev = [
-    # [typing]-[BEGIN]
-    # Static type checker
-    "mypy>=1.19.1",
-    # [typing]-[END]
-    # [testing]-[BEGIN]
-    "pytest>=9.0.2",
-    "pytest-benchmark>=5.2.3",
-    # [testing]-[END]
-    # Extra checker. Used by Zed.
-    "basedpyright>=1.37.1",
-    # Task runner
-    "poethepoet>=0.40.0",
-    # Dead code checker
-    "vulture>=2.14",
-    # Code complexity checker
-    "radon>=6.0.1",
-    # Generate a Markdown file with better compatibility with PyPI
-    "mdremotifier>=1.0.0",
-]
 
-[project.scripts]
-# For simplicity.
-uv-upgrade = "uv_upx:main_short"
-# For compatibility with uvx.
-uv-upx = "uv_upx:main"
+
+#[dependency-groups]
+#dev = [
+#    # [typing]-[BEGIN]
+#    # Static type checker
+#    "mypy>=1.19.1",
+#    # [typing]-[END]
+#    # [testing]-[BEGIN]
+#    "pytest>=9.0.2",
+#    "pytest-benchmark>=5.2.3",
+#    # [testing]-[END]
+#    # Extra checker. Used by Zed.
+#    "basedpyright>=1.37.1",
+#    # Task runner
+#    "poethepoet>=0.40.0",
+#    # Dead code checker
+#    "vulture>=2.14",
+#    # Code complexity checker
+#    "radon>=6.0.1",
+#    # Generate a Markdown file with better compatibility with PyPI
+#    "mdremotifier>=1.0.0",
+#]
+
+#[project.scripts]
+## For simplicity.
+#uv-upgrade = "uv_upx:main_short"
+## For compatibility with uvx.
+#uv-upx = "uv_upx:main"
+
+#[build-system]
+#requires = ["uv_build>=0.9.15,<0.10.0"]
+#build-backend = "uv_build"
+
+#[project.scripts]
+## For simplicity.
+#uv-upgrade = "uv_upx_r"
+
 
 [build-system]
-requires = ["uv_build>=0.9.15,<0.10.0"]
-build-backend = "uv_build"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = "bin"
+manifest-path = "rust/uv_upx_r/Cargo.toml"
+#strip = true
+include = [{ path = "licenses/*", format = ["wheel", "sdist"] }]
+
+module-name = "uv_upx_r"
+python-source = "."
+#locked = true
+
+#[[tool.maturin.targets]]
+#name = "uv-upx-r"
+#kind = "bin"
+#
+#[[tool.maturin.targets]]
+#name = "uv-upx-r-2"
+#kind = "bin"
 
 [tool.poe.tasks]
 pca = [

@@ -73,7 +73,7 @@ def handle_py_project_v2(
                     )
 
     if changes or (profile is UpgradeProfile.WITH_PINNED):
-        # Note: "(profile is UpgradeProfile.WITH_PINNED)" require some way to write back changes.
+        # Note: "(profile is UpgradeProfile.WithPinned)" require some way to write back changes.
         toml_save(py_project.path, data)
         logger.info(f"Saved changes to {py_project.path.as_uri()}")
 

@@ -1,89 +1,89 @@
-# CLI
+# Command-Line Help for `uv-upx`
 
-**Usage**:
+This document contains the help content for the `uv-upx` command-line program.
 
-```console
-$ [OPTIONS] COMMAND [ARGS]...
-```
+**Command Overview:**
 
-**Options**:
+* [`uv-upx`↴](#uv-upx)
+* [`uv-upx upgrade`↴](#uv-upx-upgrade)
+* [`uv-upx cli-helpers`↴](#uv-upx-cli-helpers)
+* [`uv-upx cli-helpers export-cli-help`↴](#uv-upx-cli-helpers-export-cli-help)
+* [`uv-upx cli-helpers generate-shell-completion`↴](#uv-upx-cli-helpers-generate-shell-completion)
 
-* `--install-completion`: Install completion for the current shell.
-* `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
-* `--help`: Show this message and exit.
-
-**Commands**:
-
-* `upgrade`
-* `helpers`
-
-## `upgrade`
-
-**Usage**:
-
-```console
-$ upgrade [OPTIONS] COMMAND [ARGS]...
-```
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-**Commands**:
-
-* `run`: Update pyproject.toml dependencies to...
-
-### `upgrade run`
+## `uv-upx`
 
 Update pyproject.toml dependencies to latest compatible versions.
 
-**Usage**:
+**Usage:** `uv-upx <COMMAND>`
 
-```console
-$ upgrade run [OPTIONS]
-```
+###### **Subcommands:**
 
-**Options**:
+* `upgrade` — 1 Update pyproject.toml dependencies to latest compatible versions
+* `cli-helpers` — CLI Helpers
 
-* `-p, --project PATH`: Path to project root directory. Use current working directory if not specified.
-* `--dry-run`: Show changes without writing file
-* `--verbose`: Show more output
-* `--preserve-original-package-names`: Preserve original package names in pyproject.toml
-* `--no-sync`: Do not run uv-sync. In case of the complex build process. But, recommended to run with sync, for better chances for revealing problems.
-* `--profile [default|with_pinned]`: Which profile to use when upgrading dependencies. (Experimental feature)
-* `--interactive`: Enable interactive mode for selecting updates. (Experimental feature)
-* `--version`: Show version and exit.
-* `--help`: Show this message and exit.
 
-## `helpers`
 
-**Usage**:
+## `uv-upx upgrade`
 
-```console
-$ helpers [OPTIONS] COMMAND [ARGS]...
-```
+1 Update pyproject.toml dependencies to latest compatible versions
 
-**Options**:
+**Usage:** `uv-upx upgrade [OPTIONS]`
 
-* `--help`: Show this message and exit.
+###### **Options:**
 
-**Commands**:
+* `-p`, `--project <PATH>` — Path to the project root directory. Use the current working directory if not specified
+* `--verbose` — Show more output
+* `--preserve-original-package-names` — Preserve original package names in pyproject.toml
+* `--no-sync` — Do not run uv-sync
+* `--profile <PROFILE>` — Which profile to use when upgrading dependencies. (Experimental feature)
 
-* `collect-top-level-dependencies-from-project`: Collect top-level dependencies from the...
+  Possible values:
+  - `default`:
+    Default profile
+  - `with-pinned`:
+    Upgrade also "pinned" (== exact version) dependencies
 
-### `helpers collect-top-level-dependencies-from-project`
+* `--interactive` — Enable interactive mode for selecting updates. (Experimental feature)
 
-Collect top-level dependencies from the project.
 
-**Usage**:
 
-```console
-$ helpers collect-top-level-dependencies-from-project [OPTIONS]
-```
+## `uv-upx cli-helpers`
 
-**Options**:
+CLI Helpers
 
-* `-p, --project PATH`: Path to project root directory. Use current working directory if not specified.
-* `--only-special-cases`: Collect only complex and unhandled dependencies
-* `--preserve-original-package-names`: Preserve original package names in pyproject.toml
-* `--help`: Show this message and exit.
+**Usage:** `uv-upx cli-helpers <COMMAND>`
+
+###### **Subcommands:**
+
+* `export-cli-help` — Export cli help as Markdown
+* `generate-shell-completion` — Generate shell completion
+
+
+
+## `uv-upx cli-helpers export-cli-help`
+
+Export cli help as Markdown
+
+**Usage:** `uv-upx cli-helpers export-cli-help --output <PATH>`
+
+###### **Options:**
+
+* `--output <PATH>` — Path to the output file
+
+
+
+## `uv-upx cli-helpers generate-shell-completion`
+
+Generate shell completion
+
+**Usage:** `uv-upx cli-helpers generate-shell-completion <SHELL>`
+
+###### **Arguments:**
+
+* `<SHELL>`
+
+  Possible values: `bash`, `elvish`, `fish`, `nushell`, `powershell`, `zsh`
+
+
+
+

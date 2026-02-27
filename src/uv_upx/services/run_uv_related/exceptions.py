@@ -1,2 +1,0 @@
-class UnresolvedDependencyError(Exception):
-    pass

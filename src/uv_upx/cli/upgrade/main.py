@@ -14,15 +14,6 @@ app = typer.Typer(
 )
 
 
-def version_callback(
-    value: bool,  # noqa: FBT001
-) -> None:
-    if value:
-        app_name = "uv-upx"
-        version: str = importlib.metadata.version(app_name)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
-        typer.echo(f"{app_name} {version}")
-        raise typer.Exit
-
 
 # noinspection PyUnusedLocal
 @app.command()
@@ -71,16 +62,7 @@ def run(  # noqa: PLR0913
             help="Enable interactive mode for selecting updates. (Experimental feature)",
         ),
     ] = False,
-    #
-    version: Annotated[  # noqa: ARG001  # pyright: ignore[reportUnusedParameter]
-        bool | None,
-        typer.Option(
-            "--version",
-            help="Show version and exit.",
-            callback=version_callback,
-            is_eager=True,
-        ),
-    ] = None,
+
 ) -> None:
     """Update pyproject.toml dependencies to latest compatible versions."""
     run_updater(

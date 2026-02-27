@@ -92,8 +92,9 @@ You can run commands with the `--help` flag with more details.
 
 Exported versions:
 
-- for `uv-upgrade`:
-  - [cli_help_simple.md](docs_extra/cli_help_simple.md)
+[//]: # (- for `uv-upgrade`:)
+
+[//]: # (  - [cli_help_simple.md]&#40;docs_extra/cli_help_simple.md&#41;)
 - for `uv-upx`:
   - [cli_help_advanced.md](docs_extra/cli_help_advanced.md)
 
@@ -318,3 +319,11 @@ It uses type annotations anyway. For simpler migration.
 # Other similar tools comparison
 
 [Other similar tools comparison](docs_extra/other_similar_tools_comparison.md)
+
+---
+
+# Stars
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=alirex/uv_upgrade&type=date&legend=top-left)](https://www.star-history.com/#alirex/uv_upgrade&type=date&legend=top-left)
