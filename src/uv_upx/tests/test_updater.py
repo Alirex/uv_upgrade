@@ -1,9 +1,12 @@
-import pathlib  # noqa: TC003
+from typing import TYPE_CHECKING
 
 from uv_upx.services.dependencies_from_project.parse_from_uv_lock_file import parse_from_uv_lock_file
 from uv_upx.services.dependency_up.handle_groups import handle_py_projects_v2
 from uv_upx.services.parse_v2.collect_dependencies import collect_top_level_dependencies
 from uv_upx.services.upgrade_profile import UpgradeProfile
+
+if TYPE_CHECKING:
+    import pathlib
 
 LOCK_FILE_CONTENTS = """
 [[package]]
