@@ -203,6 +203,14 @@ dependencies = [
 ]
 ```
 
+To keep such dependencies as they are, run with `--keep-unconstrained`:
+
+```shell
+uv-upgrade --keep-unconstrained
+```
+
+Then only the dependencies that already have a constraint are updated.
+
 ### Skip unhandled constraints
 
 It skips unhandled and complex constraints. Like:

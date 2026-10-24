@@ -14,6 +14,7 @@ from uv_upx.services.upgrade_profile import UpgradeProfile
 
 if TYPE_CHECKING:
     from uv_upx.services.dependencies_from_project import DependenciesRegistry, Version
+    from uv_upx.services.dependency_up.models.update_options import DependencyUpdateOptions
 
 
 def update_dependency_v2(
@@ -21,9 +22,12 @@ def update_dependency_v2(
     dependencies_registry: DependenciesRegistry,
     parsed: DependencyParsed,
     #
-    profile: UpgradeProfile,
+    options: DependencyUpdateOptions,
 ) -> ChangesItem | None:
-    """Updates the dependency version based on registry lookup."""
+    """Updates the dependency version based on registry lookup.
+
+    A dependency without a version constraint gets `>=<locked version>`, unless `options.keep_unconstrained` is set.
+    """
     version_new = dependencies_registry.root.get(parsed.package_name)
     if version_new is None:
         # Note: raise error, because it now we have all the dependencies in the registry.
@@ -40,12 +44,14 @@ def update_dependency_v2(
             version_constraint=version_constraint,
             version_new=version_new,
             #
-            profile=profile,
+            profile=options.profile,
         )
         if is_has_changes_local:
             is_has_changes = True
 
     if not parsed.version_constraints:
+        if options.keep_unconstrained:
+            return None
         parsed.version_constraints.append(
             VersionConstraint(operator=VERSION_OPERATOR_I_GREATER_OR_EQUAL, version=version_new),
         )

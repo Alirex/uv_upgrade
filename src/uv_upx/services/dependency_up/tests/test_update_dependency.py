@@ -1,6 +1,7 @@
 import pytest
 
 from uv_upx.services.dependencies_from_project import DependenciesRegistry, Version
+from uv_upx.services.dependency_up.models.update_options import DependencyUpdateOptions
 from uv_upx.services.dependency_up.parse_dependency import parse_dependency
 from uv_upx.services.dependency_up.update_dependency import update_dependency_v2
 from uv_upx.services.package_name import PackageName
@@ -50,7 +51,7 @@ def test_update_dependency(
     change = update_dependency_v2(
         dependencies_registry=dependencies_registry,
         parsed=parsed,
-        profile=profile,
+        options=DependencyUpdateOptions(profile=profile),
     )
 
     if expected is None:
@@ -61,10 +62,38 @@ def test_update_dependency(
         assert change.to_item.get_full_spec() == expected
 
 
+@pytest.mark.parametrize(
+    ("dependency", "expected"),
+    [
+        # No constraint: left as it is.
+        ("httpx", None),
+        ('httpx[http2]; python_version >= "3.14"', None),
+        # A constraint is still raised.
+        ("httpx>=0.24.0", "httpx>=0.28.1"),
+    ],
+)
+def test_update_dependency_keep_unconstrained(
+    dependencies_registry: DependenciesRegistry,
+    dependency: str,
+    expected: str | None,
+) -> None:
+    change = update_dependency_v2(
+        dependencies_registry=dependencies_registry,
+        parsed=parse_dependency(dependency),
+        options=DependencyUpdateOptions(keep_unconstrained=True),
+    )
+
+    if expected is None:
+        assert change is None
+    else:
+        assert change is not None
+        assert change.to_item.get_full_spec() == expected
+
+
 def test_update_dependency_not_in_registry(dependencies_registry: DependenciesRegistry) -> None:
     change = update_dependency_v2(
         dependencies_registry=dependencies_registry,
         parsed=parse_dependency("unknown>=1.0"),
-        profile=UpgradeProfile.DEFAULT,
+        options=DependencyUpdateOptions(),
     )
     assert change is None

@@ -14,6 +14,7 @@ from uv_upx.services.upgrade_profile import UpgradeProfile
 if TYPE_CHECKING:
     from uv_upx.services.dependencies_from_project import DependenciesRegistry
     from uv_upx.services.dependency_up import ChangesList
+    from uv_upx.services.dependency_up.models.update_options import DependencyUpdateOptions
     from uv_upx.services.parse_v2.collect_dependencies import CollectedTopLevelDependencies, PyProjectWrapperExtra
 
 
@@ -24,9 +25,9 @@ def handle_py_project_v2(
     #
     verbose: bool,
     #
-    profile: UpgradeProfile,
-    #
     interactive: bool = False,
+    #
+    update_options: DependencyUpdateOptions,
 ) -> ChangesList:
     """Handle a single pyproject.toml file."""
     logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ def handle_py_project_v2(
                 dependencies_registry=dependencies_registry,
                 parsed=dependency_candidate,
                 #
-                profile=profile,
+                options=update_options,
             )
             if change_or_none is not None:
                 apply_change = True
@@ -74,7 +75,7 @@ def handle_py_project_v2(
                         py_project.path.as_uri(),
                     )
 
-    if changes or (profile is UpgradeProfile.WITH_PINNED):
+    if changes or (update_options.profile is UpgradeProfile.WITH_PINNED):
         # Note: "(profile is UpgradeProfile.WITH_PINNED)" require some way to write back changes.
         toml_save(py_project.path, data)
         logger.info("Saved changes to %s", py_project.path.as_uri())
@@ -92,9 +93,9 @@ def handle_py_projects_v2(
     #
     verbose: bool,
     #
-    profile: UpgradeProfile,
-    #
     interactive: bool = False,
+    #
+    update_options: DependencyUpdateOptions,
 ) -> ChangesList:
     """Handle multiple pyproject.toml files."""
     changes: ChangesList = []
@@ -109,9 +110,9 @@ def handle_py_projects_v2(
             #
             verbose=verbose,
             #
-            profile=profile,
-            #
             interactive=interactive,
+            #
+            update_options=update_options,
         )
         changes.extend(changes_local)
 

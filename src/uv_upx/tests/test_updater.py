@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from uv_upx.services.dependencies_from_project.parse_from_uv_lock_file import parse_from_uv_lock_file
 from uv_upx.services.dependency_up.handle_groups import handle_py_projects_v2
+from uv_upx.services.dependency_up.models.update_options import DependencyUpdateOptions
 from uv_upx.services.parse_v2.collect_dependencies import collect_top_level_dependencies
 from uv_upx.services.upgrade_profile import UpgradeProfile
 
@@ -70,12 +71,12 @@ def _write_workspace(root: pathlib.Path) -> pathlib.Path:
     return member
 
 
-def _upgrade(root: pathlib.Path, profile: UpgradeProfile) -> list[str]:
+def _upgrade(root: pathlib.Path, profile: UpgradeProfile, *, keep_unconstrained: bool = False) -> list[str]:
     changes = handle_py_projects_v2(
         dependencies_registry=parse_from_uv_lock_file(LOCK_FILE_CONTENTS),
         collected_top_level_dependencies=collect_top_level_dependencies(project_root_path=root),
         verbose=False,
-        profile=profile,
+        update_options=DependencyUpdateOptions(profile=profile, keep_unconstrained=keep_unconstrained),
     )
     return sorted(str(change) for change in changes)
 
@@ -99,6 +100,22 @@ def test_upgrade_workspace(tmp_path: pathlib.Path) -> None:
     )
     # Pinned versions are kept with the default profile.
     assert (member / "pyproject.toml").read_text() == MEMBER_PYPROJECT.replace('"httpx"', '"httpx>=0.28.1"')
+
+
+def test_upgrade_workspace_keep_unconstrained(tmp_path: pathlib.Path) -> None:
+    member = _write_workspace(tmp_path)
+
+    changes = _upgrade(tmp_path, UpgradeProfile.DEFAULT, keep_unconstrained=True)
+
+    # "rich" and the member's "httpx" have no constraint: they are left alone.
+    assert changes == [
+        "httpx: >=0.24.0 -> >=0.28.1",
+        "pytest: >=8.0 -> >=9.0.1",
+    ]
+    assert (tmp_path / "pyproject.toml").read_text() == (
+        ROOT_PYPROJECT.replace('"httpx>=0.24.0"', '"httpx>=0.28.1"').replace('"pytest>=8.0"', '"pytest>=9.0.1"')
+    )
+    assert (member / "pyproject.toml").read_text() == MEMBER_PYPROJECT
 
 
 def test_upgrade_workspace_with_pinned(tmp_path: pathlib.Path) -> None:
