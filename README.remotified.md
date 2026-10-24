@@ -317,11 +317,9 @@ Maybe it will be useful for someone else.
 
 ### Why not in Rust?
 
-Because it's a temporary Proof-of-Concept.
-
-Maybe it will be replaced by Rust in the future.
-
-It uses type annotations anyway. For simpler migration.
+It is being ported: the Rust implementation lives in `rust/uv_upx` (same commands, flags and results; the parity
+tests check it against the Python one) and will replace the Python package on PyPI after the switch-over described
+in [rust_rework.md](https://github.com/Alirex/uv_upgrade/blob/main/docs_extra/rust_rework.md). Until then PyPI ships the Python version.
 
 ---
 

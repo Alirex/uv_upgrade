@@ -1,84 +1,131 @@
-# Rust rework: design note
+# Rust rework: state, distribution plan, switch-over
 
-Status (2026-10-25): planned, not started on `main`. The branch `features/rust` (one commit `fa7571f` "temp",
-2026-02-28) holds a first cut: a cargo workspace with `rust/uv_upx_r` (clap args, tracing logging, package-name
-normalization, `uv lock` / `uv sync` runners, line-based TOML helpers, the binaries `uv-upx` and `uv-upgrade`) and
-the Python package removed (its dev notes moved to `docs_extra/dev_python.md`). Do not merge or copy from it unasked
-(AGENTS.md); this note says how to resume.
+Status (2026-10-25): **ported, not yet shipped.** The Rust implementation lives in `rust/uv_upx/` next to the Python
+package and passes the same tests plus parity tests against the Python CLI. PyPI still ships the Python package
+until the switch-over checklist below is done. The old branch `features/rust` (one commit `fa7571f`, 2026-02-28) is
+superseded by this port and can be deleted; nothing was taken from it (it predated 0.4.5, used tokio and a different
+CLI shape).
 
-## Goal
+## What is where
 
-Same tool, same name, no Python at runtime: `uv tool install uv-upx` and `uvx uv-upx` keep working, the CLI surface
-stays as documented in `docs_extra/cli_help_*.md`, and the behaviour stays as covered by the Python tests.
+| Path                           | Content                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `Cargo.toml` (root)            | The cargo workspace: one member, `[workspace.lints]` (pedantic clippy, `unsafe_code = "forbid"`)  |
+| `rust/uv_upx/`                 | The crate `uv-upx`: library + the two binaries `uv-upx` and `uv-upgrade`                          |
+| `rust/uv_upx/src/`             | One module per Python service (`collect`, `dependency/`, `updater`, `uv_runner`, `pyprojects`, …) |
+| `rust/uv_upx/tests/cli.rs`     | The CLI and the upgrade flow through the binaries with a fake `uv` (counterparts of the pytest)   |
+| `rust/uv_upx/tests/parity.rs`  | Both CLIs on identical fixtures: files, stdout, log lines, exit codes and `uv` calls must match   |
+| `rust/uv_upx/tests/snapshots/` | `insta` snapshots of the help texts                                                               |
+| `rust/uv_upx/pyproject.toml`   | The maturin project of the wheel (`bindings = "bin"`); not a uv workspace member                  |
+| `src/uv_upx/`                  | The Python package, unchanged, still what `uv build` and PyPI ship                                |
 
-## Do not start from the branch
+A root workspace plus `rust/<crate>` (rather than a crate at the repo root) keeps `cargo` commands working from the
+root, keeps Rust sources out of the Python `src/`, and leaves room for a second crate (e.g. a library split) without
+moving files.
 
-`git merge-tree main features/rust` conflicts in 12 files: the branch predates 0.4.5 and deletes Python files that
-`main` changed since (#5 `--version`, #6 workspace members, `--keep-unconstrained`, the typed TOML access, the tests).
-Resume from `main` instead and take the Rust files over:
+## Crates (what replaced what)
 
-```shell
-git switch -c feat/rust main
-git checkout fa7571f -- Cargo.toml Cargo.lock rust/
-```
+| Need                               | Crate                                  | Replaces                                                |
+| ---------------------------------- | -------------------------------------- | ------------------------------------------------------- |
+| Format-preserving `pyproject.toml` | `toml_edit`                            | tomlkit                                                 |
+| CLI                                | `clap` (derive), `clap_complete`       | typer (`--install-completion`, `--show-completion` too) |
+| Dependency strings                 | `regex` (a port of the Python regexes) | `parse_dependency.py`                                   |
+| Workspace member globs             | `glob`                                 | `pathlib.Path.glob`                                     |
+| Interactive accept/reject          | `inquire`                              | prompt-toolkit                                          |
+| Log lines in Python's format       | `chrono` (timestamps)                  | `logging.basicConfig`                                   |
+| Errors                             | `thiserror`                            | safe-result, exceptions                                 |
+| Tests                              | `insta`, `tempfile`                    | pytest                                                  |
 
-Keep the Python package in place until the Rust binary passes the same tests (below); only then remove it.
+`pep508_rs` / `pep440_rs` were planned but not used on purpose: they normalize markers and versions on output
+(`python_version<'3.11'` would come back as `python_version < '3.11'`), while the tool writes the parts back
+verbatim. Byte parity of the resulting files needed the lenient regex parser.
 
-## Crates
+## Parity
 
-| Need                                                        | Crate                                                            | Replaces                                       |
-| ----------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------- |
-| Format-preserving `pyproject.toml` edits                    | `toml_edit` (already in the branch)                              | tomlkit; the branch's `change_content_of_line` |
-| Dependency strings (`name[extra]>=1; marker`)               | `pep508_rs` (astral)                                             | the regex parser `parse_dependency.py`         |
-| Versions and specifiers (`>=`, `==`, `===`, local segments) | `pep440_rs` (astral)                                             | string compares, `local_segments`              |
-| `uv.lock` reading                                           | `toml` + `serde` (`[[package]]` name and version only)           | `parse_from_uv_lock_file.py`                   |
-| Workspace member globs                                      | `glob`                                                           | `get_pyproject_paths_by_globs.py`              |
-| CLI, completion, help as Markdown                           | `clap`, `clap_complete_command`, `clap-markdown` (in the branch) | typer, `typer utils docs`                      |
-| Interactive accept/reject                                   | `inquire` (in the branch)                                        | prompt-toolkit                                 |
-| Errors                                                      | `thiserror` for the library, `anyhow` in the binaries            | safe-result                                    |
+Checked by `cargo test --test parity` (needs the venv: `just dev-sync`; skipped with a note without it). 28 runs in
+10 scenarios: simple project, `--no-sync`, `--dry-run`, `--verbose`, nothing to upgrade, failing `uv sync`, failing
+`uv lock`, the local-segment fallback, `--keep-unconstrained`, `--preserve-original-package-names`, a workspace with
+comments, trailing comments, odd whitespace, single quotes, nested groups, workspace sources, extras, markers,
+excluded members, the `with_pinned` profile, the helpers command with and without `--only-special-cases`, errors
+before the update, `--version`.
 
-`tokio` and `async-process` in the branch are not needed: the tool runs two or three `uv` processes one after the
-other; use `std::process::Command`.
+Same on both sides:
 
-## Packaging: keep the PyPI name
+- the resulting `pyproject.toml` files and `uv.lock` (byte for byte, comments and formatting kept);
+- stdout, and the log lines on stderr (`name - LEVEL - message`, the Python logger names kept);
+- exit codes: 0 after a success and after a rolled-back failure (as the Python version does), 1 for an error before
+  the update (missing `uv.lock`, invalid dependency string), 2 for a usage error;
+- the sequence of `uv` calls (`uv lock --upgrade`, `uv sync --all-groups --all-extras --all-packages`, `--frozen`).
 
-Build the wheels with [maturin](https://www.maturin.rs/bindings#bin) and `bindings = "bin"` in `pyproject.toml`:
-the wheel ships the two binaries as scripts, so `uv tool install uv-upx`, `uvx uv-upx` and `uvx --from uv-upx
-uv-upgrade` keep working with no Python code inside. Publish from CI (`maturin generate-ci github`) for Linux
-(x86_64, aarch64, musl), macOS (x86_64, arm64) and Windows; a tag triggers the build, the upload stays a manual
-approval step (trusted publishing on PyPI, no token in the repo).
+Known differences (intended):
 
-## Tests first
+- Help text layout: clap's instead of Typer's rich panels; the option names, order and help strings are the same,
+  `--help` has no `-h`, `uv-upx upgrade` and `helpers` have no description line (Typer shows none either).
+- Error messages before the update: one `Error: …` line instead of a Python traceback; after the update started,
+  the rollback log line still quotes the Python exception type (`'<class '…UnresolvedDependencyError'>:…'`).
+- A relative `--project` path works (Python's `as_uri()` raises `ValueError` on it).
+- The interactive prompt is `inquire`'s select, not prompt-toolkit's; Ctrl-C rolls back instead of leaving the
+  files half-written.
+- Workspace members are visited in path order (Python iterates a set).
+- Timestamps are local time with milliseconds like Python's; the sub-millisecond ordering of identical lines is
+  the same.
 
-Port the Python tests as data before porting the code:
+## Distribution: keep the PyPI name, ship binaries
 
-- `src/uv_upx/tests/test_updater.py` and `src/uv_upx/services/updater/tests/test_run_updater.py` already describe the
-  flow as `pyproject.toml` + `uv.lock` before/after pairs and the expected `uv` commands. Move them to
-  `tests/fixtures/<case>/{pyproject.toml,uv.lock,uv.lock.after,expected/...}` with a small manifest (options, expected
-  changes).
-- A fake `uv` on `PATH` (a shell or Rust test binary) that records its arguments and copies `uv.lock.after` into
-  place, like `fake_uv.py` does by monkeypatching `subprocess.run`.
-- Run the fixtures against both implementations (`pytest` and `cargo test`) until the Rust one passes them all.
-- The parser unit tests (`test_parse_dependency.py`, `test_version_constraints.py`, `test_update_dependency.py`,
-  `test_package_name_normalization.py`) become `rstest` cases.
+[maturin](https://www.maturin.rs/bindings#bin) with `bindings = "bin"` builds a wheel that contains the two
+executables as scripts and no Python code. `uv tool install uv-upx`, `uvx uv-upx` and `uvx --from uv-upx uv-upgrade`
+keep working; `requires-python` drops to `>=3.9` because no interpreter runs.
 
-## Behaviour that must survive
+Verified locally: `just rel-wheel-rust` (= `uvx maturin build --release` in `rust/uv_upx`) gives
+`uv_upx-0.5.0-py3-none-manylinux_2_39_x86_64.whl` (2.7 MB; binaries 3.0 MB each, stripped, LTO), and
+`uv tool install <wheel>` installs both executables.
 
-- Only `>=`-style constraints move; `==` only with `--profile with_pinned` (never `===`); other operators are left.
-- Dependencies without a constraint get `>=<locked version>` unless `--keep-unconstrained` (#6).
-- `{ workspace = true }` sources (root and member `[tool.uv.sources]`) are skipped (#6); nested `include-group`
-  entries are skipped.
-- Rollback of `pyproject.toml` and `uv.lock` on any failure and on "no changes"; `--dry-run` always rolls back;
-  `--no-sync` relocks with `uv lock` instead of `uv sync`.
-- The local-segment fallback: when `uv lock` fails on `+local` versions, pin them with `==` and retry.
-- Comments and formatting of `pyproject.toml` stay (`toml_edit`).
-- `--version` on both binaries (#5).
+Release pipeline (to add at the switch-over, nothing published yet):
 
-## Order of work
+1. `maturin generate-ci github --pytest false` as `.github/workflows/release.yml`: wheels for Linux (x86_64,
+   aarch64; glibc via the manylinux images, plus musl), macOS (x86_64, arm64) and Windows (x86_64), plus the sdist.
+2. Trigger on a tag `v*`; the upload job is a separate `release` environment with a required reviewer, so a tag
+   builds and the maintainer approves the upload. PyPI trusted publishing (OIDC) for the project `uv-upx`, no token
+   in the repo.
+3. The sdist builds from source with cargo (`uv tool install` on an unsupported platform falls back to it).
 
-1. `feat/rust` from `main`, Rust files taken over, `cargo build` green, CI job `cargo test` added.
-2. Fixtures and the fake `uv`; pytest runs them (replacing the inline strings).
-3. Parser with `pep508_rs`/`pep440_rs`; parser fixtures pass.
-4. Updater flow; all fixtures pass; `cargo clippy -- -D warnings` and `cargo fmt --check` join the gate.
-5. maturin packaging; `uv tool install .` gives working `uv-upx` and `uv-upgrade`.
-6. Remove the Python package, regenerate the CLI help, bump the minor version, release from CI.
+Alternatives considered: `cargo-dist` (GitHub releases + installers; good for `curl | sh`, but it does not publish to
+PyPI, and PyPI is how the users install today) and a thin Python wrapper that downloads the binary (an extra moving
+part and a network call at install time).
+
+## Switch-over checklist
+
+Do it in one short-lived branch; each step is a commit.
+
+1. Root `pyproject.toml`: replace `[build-system]` (`uv_build` → `maturin`), set `dynamic = ["version"]`, drop
+   `dependencies` and `[project.scripts]` (maturin registers the binaries), keep `readme`, `keywords`, URLs; move
+   `[tool.maturin]` in from `rust/uv_upx/pyproject.toml` with `manifest-path = "rust/uv_upx/Cargo.toml"`, then
+   delete that file. `uv build` must produce the bin wheel.
+2. Bump the minor version in `Cargo.toml` (`[workspace.package]`) and, until step 4, in `pyproject.toml`; the Rust
+   test `version_matches_pyproject` keeps them equal (drop that test when the version is only in `Cargo.toml`).
+3. Regenerate `docs_extra/cli_help_*.md` from the Rust binaries (`--help` output; the `typer utils docs` hooks go),
+   update `README.md` (install section unchanged; "Why not in Rust?" goes) and `docs_extra/dev.md` (setup: rustup;
+   release: tag → CI).
+4. Remove the Python package: `src/uv_upx/`, the Python dev dependencies and tool config in `pyproject.toml`,
+   `uv.lock`, the Python prek hooks (`ruff`, `mypy`, `basedpyright`, `pytest`, `uv-lock`, the help generators), the
+   Python CI jobs; keep `prettier`, `shellcheck`, the generic hooks, `mdremotifier`, and the cargo hooks. The parity
+   test goes with it (`tests/parity.rs` and the venv lookup); `tests/cli.rs` stays as the behaviour suite.
+5. Add the release workflow (above), configure trusted publishing on PyPI, dry-run with `maturin build` on the
+   matrix, then tag. **Publishing needs the maintainer's explicit OK** (AGENTS.md).
+6. Delete the branch `features/rust`; update `AGENTS.md` (one implementation) and HQ's registry tags.
+
+Until then: a behaviour change lands in both implementations with a parity scenario; `just q-check` runs both test
+suites.
+
+## Open items
+
+- Windows: the fake `uv` of the tests is a shell script, so the flow and parity tests are Unix-only (`#[cfg(unix)]`);
+  the unit tests and the CLI argument tests run everywhere. A `.cmd` fake, or a tiny Rust fake-uv binary, would
+  cover Windows in CI.
+- `helpers collect-top-level-dependencies-from-project` prints nothing without `--only-special-cases` in both
+  implementations (the Python `filter_dependencies` yields only inside that branch); kept for parity, worth fixing in
+  both.
+- A failed `uv lock`/`uv sync` is rolled back and still exits 0 (both implementations); a non-zero exit would be
+  more useful in scripts. Decide at the switch-over (it is a behaviour change).
+- `--install-completion` writes where Typer does (`~/.bash_completions/<name>.sh` + `~/.bashrc`, `~/.zfunc/_<name>`,
+  fish completions dir); PowerShell/elvish print the script with `--show-completion` only.
