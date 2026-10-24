@@ -26,16 +26,16 @@ Keep the Python package in place until the Rust binary passes the same tests (be
 
 ## Crates
 
-| Need                                           | Crate                                                  | Replaces                                      |
-| ---------------------------------------------- | ------------------------------------------------------ | --------------------------------------------- |
-| Format-preserving `pyproject.toml` edits       | `toml_edit` (already in the branch)                    | tomlkit; the branch's `change_content_of_line` |
-| Dependency strings (`name[extra]>=1; marker`)  | `pep508_rs` (astral)                                   | the regex parser `parse_dependency.py`        |
-| Versions and specifiers (`>=`, `==`, `===`, local segments) | `pep440_rs` (astral)                        | string compares, `local_segments`             |
-| `uv.lock` reading                              | `toml` + `serde` (`[[package]]` name and version only)  | `parse_from_uv_lock_file.py`                  |
-| Workspace member globs                         | `glob`                                                 | `get_pyproject_paths_by_globs.py`             |
-| CLI, completion, help as Markdown              | `clap`, `clap_complete_command`, `clap-markdown` (in the branch) | typer, `typer utils docs`           |
-| Interactive accept/reject                      | `inquire` (in the branch)                              | prompt-toolkit                                |
-| Errors                                         | `thiserror` for the library, `anyhow` in the binaries  | safe-result                                   |
+| Need                                                        | Crate                                                            | Replaces                                       |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------- |
+| Format-preserving `pyproject.toml` edits                    | `toml_edit` (already in the branch)                              | tomlkit; the branch's `change_content_of_line` |
+| Dependency strings (`name[extra]>=1; marker`)               | `pep508_rs` (astral)                                             | the regex parser `parse_dependency.py`         |
+| Versions and specifiers (`>=`, `==`, `===`, local segments) | `pep440_rs` (astral)                                             | string compares, `local_segments`              |
+| `uv.lock` reading                                           | `toml` + `serde` (`[[package]]` name and version only)           | `parse_from_uv_lock_file.py`                   |
+| Workspace member globs                                      | `glob`                                                           | `get_pyproject_paths_by_globs.py`              |
+| CLI, completion, help as Markdown                           | `clap`, `clap_complete_command`, `clap-markdown` (in the branch) | typer, `typer utils docs`                      |
+| Interactive accept/reject                                   | `inquire` (in the branch)                                        | prompt-toolkit                                 |
+| Errors                                                      | `thiserror` for the library, `anyhow` in the binaries            | safe-result                                    |
 
 `tokio` and `async-process` in the branch are not needed: the tool runs two or three `uv` processes one after the
 other; use `std::process::Command`.
