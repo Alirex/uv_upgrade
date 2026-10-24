@@ -19,21 +19,110 @@ from uv_upx.services.upgrade_profile import UpgradeProfile
 if TYPE_CHECKING:
     import pathlib
 
+    from uv_upx.services.parse_v2.collect_dependencies import CollectedTopLevelDependencies
+    from uv_upx.services.updater.options import UpdaterOptions
 
-def run_updater(  # noqa: C901, PLR0913
+LOCAL_SEGMENTS_MESSAGE = " ".join(
+    (
+        "Cannot proceed with pinned profile because there are local segments present.",
+        "We rollback and try again with pinning constraints with local segments.",
+    ),
+)
+
+
+def _update_lock_file_with_fallback(
+    *,
+    project_root_path: pathlib.Path,
+    collected_top_level_dependencies: CollectedTopLevelDependencies,
+    rollback_data: RollbackData,
+    options: UpdaterOptions,
+) -> None:
+    """Update `uv.lock`. Raise on failure."""
+    logger = logging.getLogger(__name__)
+
+    match update_lock_file(
+        project_root_path,
+    ):
+        case Ok():
+            pass
+        case Err(NonEmptyLocalSegmentsError()):
+            # Note: Workaround for dependencies with local segments.
+            logger.error(LOCAL_SEGMENTS_MESSAGE)
+
+            rollback_updater(
+                rollback_data=rollback_data,
+                #
+                no_sync=options.no_sync,
+            )
+
+            change_pinned_constraints(
+                collected_top_level_dependencies=collected_top_level_dependencies,
+                is_ignore_local_segments=True,
+            )
+
+            update_lock_file(
+                project_root_path,
+            ).unwrap()
+
+        case Err(e):
+            raise e
+
+
+def _apply_updates(
+    *,
+    project_root_path: pathlib.Path,
+    collected_top_level_dependencies: CollectedTopLevelDependencies,
+    rollback_data: RollbackData,
+    options: UpdaterOptions,
+) -> bool:
+    """Update the lock file and the pyproject.toml files. Raise on failure.
+
+    Return `False`, if there are no important changes.
+    """
+    logger = logging.getLogger(__name__)
+
+    _update_lock_file_with_fallback(
+        project_root_path=project_root_path,
+        collected_top_level_dependencies=collected_top_level_dependencies,
+        rollback_data=rollback_data,
+        options=options,
+    )
+
+    dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
+
+    if not handle_py_projects_v2(
+        collected_top_level_dependencies=collected_top_level_dependencies,
+        dependencies_registry=dependencies_registry,
+        #
+        verbose=options.verbose,
+        #
+        profile=options.profile,
+        #
+        interactive=options.interactive,
+    ):
+        return False
+
+    logger.info("Updated pyproject.toml files successfully.")
+
+    finalize_updating(
+        project_root_path,
+        dry_run=options.dry_run,
+        #
+        no_sync=options.no_sync,
+        #
+        profile=options.profile,
+        #
+        interactive=options.interactive,
+    ).unwrap()
+
+    return True
+
+
+def run_updater(
     *,
     project_root_path: pathlib.Path,
     #
-    dry_run: bool = False,
-    verbose: bool = False,
-    #
-    preserve_original_package_names: bool = False,
-    #
-    no_sync: bool = False,
-    #
-    interactive: bool = False,
-    #
-    profile: UpgradeProfile = UpgradeProfile.DEFAULT,
+    options: UpdaterOptions,
 ) -> None:
     """Orchestrates dependency updates with rollback on failure."""
     logger = logging.getLogger(__name__)
@@ -42,10 +131,10 @@ def run_updater(  # noqa: C901, PLR0913
     uv_lock_data = toml_load(uv_lock_path)
 
     py_projects = get_all_pyprojects_by_project_root_path(project_root_path)
-    if verbose:
-        logger.info(f"Found {len(py_projects.items)} pyproject.toml files in the workspace.")
+    if options.verbose:
+        logger.info("Found %d pyproject.toml files in the workspace.", len(py_projects.items))
         for py_project in py_projects.items:
-            logger.info(f"  {py_project.path.as_uri()}")
+            logger.info("  %s", py_project.path.as_uri())
 
     rollback_data = RollbackData.from_parts(
         uv_lock_path=uv_lock_path,
@@ -54,89 +143,41 @@ def run_updater(  # noqa: C901, PLR0913
         py_projects=py_projects,
     )
 
-    is_rollback_needed = dry_run
+    is_rollback_needed = options.dry_run
     rollback_message = "Rolling back to previous state because dry run is enabled."
 
     collected_top_level_dependencies = collect_top_level_dependencies(
         project_root_path=project_root_path,
         #
-        preserve_original_package_names=preserve_original_package_names,
+        preserve_original_package_names=options.preserve_original_package_names,
     )
 
-    if profile is UpgradeProfile.WITH_PINNED:
+    if options.profile is UpgradeProfile.WITH_PINNED:
         change_pinned_constraints(
             collected_top_level_dependencies=collected_top_level_dependencies,
         )
 
     try:
-        match update_lock_file(
-            project_root_path,
-        ):
-            case Ok():
-                pass
-            case Err(NonEmptyLocalSegmentsError()):
-                # Note: Workaround for dependencies with local segments.
-                logger.error(
-                    "Cannot proceed with pinned profile because there are local segments present."
-                    " We rollback and try again with pinning constraints with local segments.",
-                )
-
-                rollback_updater(
-                    rollback_data=rollback_data,
-                    #
-                    no_sync=no_sync,
-                )
-
-                change_pinned_constraints(
-                    collected_top_level_dependencies=collected_top_level_dependencies,
-                    is_ignore_local_segments=True,
-                )
-
-                update_lock_file(
-                    project_root_path,
-                ).unwrap()
-
-            case Err(e):
-                raise e  # noqa: TRY301
-
-        dependencies_registry = get_dependencies_from_project(workdir=project_root_path)
-
-        if handle_py_projects_v2(
+        is_updated = _apply_updates(
+            project_root_path=project_root_path,
             collected_top_level_dependencies=collected_top_level_dependencies,
-            dependencies_registry=dependencies_registry,
-            #
-            verbose=verbose,
-            #
-            profile=profile,
-            #
-            interactive=interactive,
-        ):
-            logger.info("Updated pyproject.toml files successfully.")
-
-            finalize_updating(
-                project_root_path,
-                dry_run=dry_run,
-                #
-                no_sync=no_sync,
-                #
-                profile=profile,
-                #
-                interactive=interactive,
-            ).unwrap()
-
-        else:
+            rollback_data=rollback_data,
+            options=options,
+        )
+    # Any failure must lead to the rollback, so all exceptions are caught (and logged with the traceback).
+    except Exception as e:
+        msg = f"Failed to update dependencies: '{type(e)}:{e}' Rolling back to previous state."
+        logger.exception(msg)
+        is_rollback_needed = True
+        rollback_message = msg
+    else:
+        if not is_updated:
             msg = "No important changes detected. Rolling back to previous state."
             logger.info(msg)
             is_rollback_needed = True
             rollback_message = msg
 
-    except Exception as e:  # noqa: BLE001
-        msg = f"Failed to update dependencies: '{type(e)}:{e}' Rolling back to previous state."
-        logger.error(msg)  # noqa: TRY400
-        is_rollback_needed = True
-        rollback_message = msg
-
-    if dry_run:
+    if options.dry_run:
         rollback_message = "Dry run enabled, rolling back to previous state."
         is_rollback_needed = True
 
@@ -145,9 +186,9 @@ def run_updater(  # noqa: C901, PLR0913
             rollback_updater(
                 rollback_data=rollback_data,
                 #
-                no_sync=no_sync,
+                no_sync=options.no_sync,
             )
             logger.info(rollback_message)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         msg = f"Failed to rollback: '{e}'"
-        logger.error(msg)  # noqa: TRY400
+        logger.exception(msg)

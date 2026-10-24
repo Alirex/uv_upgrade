@@ -1,4 +1,4 @@
-import pathlib  # noqa: TC003
+import pathlib
 from typing import Annotated
 
 import typer
