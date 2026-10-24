@@ -9,7 +9,8 @@
   (`src/uv_upx/**/tests/`).
 - `docs_extra/`: dev notes (`dev.md`: setup, release) and generated CLI help (`cli_help_*.md`).
 - `README.md` is the source; `README.remotified.md` (the PyPI readme) is generated from it.
-- The `features/rust` branch holds a started Rust rewrite; do not merge it or copy from it unasked.
+- The `features/rust` branch holds a started Rust rewrite; do not merge it or copy from it unasked. The plan for
+  resuming it is in `docs_extra/rust_rework.md`.
 - The repo is small and personal: commit to `main` directly, no PRs. Read-only questions need no branch.
 
 ## Commands
