@@ -8,7 +8,7 @@ build/
 dist/
 
 # uv and virtual environments
-.venv/
+.venv
 
 # Tool caches
 .ruff_cache/
@@ -52,3 +52,6 @@ coverage.xml
 Thumbs.db
 *.swp
 .vscode/
+
+# Rust build output
+target/
