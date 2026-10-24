@@ -1,12 +1,20 @@
-import importlib
-import pathlib  # noqa: TC003
+import importlib.metadata
+import pathlib
 from typing import Annotated
 
 import typer
 
 from uv_upx.services.normalize_paths import normalize_and_check_path_to_project_root
-from uv_upx.services.updater import run_updater
+from uv_upx.services.updater import UpdaterOptions, run_updater
 from uv_upx.services.upgrade_profile import UpgradeProfile
+
+NO_SYNC_HELP = " ".join(
+    (
+        "Do not run uv-sync.",
+        "In case of the complex build process.",
+        "But, recommended to run with sync, for better chances for revealing problems.",
+    ),
+)
 
 app = typer.Typer(
     pretty_exceptions_enable=False,
@@ -15,18 +23,19 @@ app = typer.Typer(
 
 
 def version_callback(
-    value: bool,  # noqa: FBT001
+    *,
+    value: bool,
 ) -> None:
     if value:
         app_name = "uv-upx"
-        version: str = importlib.metadata.version(app_name)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
+        version = importlib.metadata.version(app_name)
         typer.echo(f"{app_name} {version}")
         raise typer.Exit
 
 
 # noinspection PyUnusedLocal
 @app.command()
-def run(  # noqa: PLR0913
+def run(  # noqa: PLR0913  # Typer maps each CLI option to its own parameter, they cannot be grouped.
     *,
     project_root_path: Annotated[
         pathlib.Path | None,
@@ -50,9 +59,7 @@ def run(  # noqa: PLR0913
         bool,
         typer.Option(
             "--no-sync",
-            help="Do not run uv-sync. "
-            "In case of the complex build process. "
-            "But, recommended to run with sync, for better chances for revealing problems.",
+            help=NO_SYNC_HELP,
         ),
     ] = False,
     #
@@ -72,7 +79,7 @@ def run(  # noqa: PLR0913
         ),
     ] = False,
     #
-    version: Annotated[  # noqa: ARG001  # pyright: ignore[reportUnusedParameter]
+    _version: Annotated[
         bool | None,
         typer.Option(
             "--version",
@@ -85,15 +92,16 @@ def run(  # noqa: PLR0913
     """Update pyproject.toml dependencies to latest compatible versions."""
     run_updater(
         project_root_path=normalize_and_check_path_to_project_root(project_root_path),
-        #
-        dry_run=dry_run,
-        verbose=verbose,
-        #
-        preserve_original_package_names=preserve_original_package_names,
-        #
-        no_sync=no_sync,
-        #
-        interactive=interactive,
-        #
-        profile=profile or UpgradeProfile.get_default(),
+        options=UpdaterOptions(
+            dry_run=dry_run,
+            verbose=verbose,
+            #
+            preserve_original_package_names=preserve_original_package_names,
+            #
+            no_sync=no_sync,
+            #
+            interactive=interactive,
+            #
+            profile=profile or UpgradeProfile.get_default(),
+        ),
     )

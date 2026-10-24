@@ -18,7 +18,7 @@ app.add_typer(app_helpers, name="helpers")
 @app.callback()
 def main(
     *,
-    version: Annotated[  # pyright: ignore[reportUnusedParameter]
+    _version: Annotated[
         bool | None,
         typer.Option(
             "--version",
