@@ -24,7 +24,7 @@
 
 ## Code rules
 
-- Fully typed; basedpyright `strict`, mypy `strict`, ruff `ALL`. Fix the warning, do not silence it: fix the code,
+- Fully typed; basedpyright `all`, mypy `strict` + the pydantic plugin, ruff `ALL`. Fix the warning, do not silence it: fix the code,
   make the types stricter (validate at the boundary into a pydantic model), restructure, and only then suppress one
   line with the rule code and a reason. Turning a rule off in the config needs a reason comment.
 - Every behaviour change comes with a test in the nearest `tests/` folder.
