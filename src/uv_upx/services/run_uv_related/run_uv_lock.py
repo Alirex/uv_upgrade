@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from typing import TYPE_CHECKING
 
 from safe_result import safe_with
@@ -22,17 +23,19 @@ def run_uv_lock(
     command = ["uv", "lock"]
     if upgrade:
         command.append("--upgrade")
-    # Note: `CompletedProcess` has the typed `stderr`. `CalledProcessError.stderr` is `Any`.
+    # Note: stderr is captured to detect the local segments error, then shown to the user as uv printed it.
     completed = subprocess.run(  # noqa: S603  # Fixed argv: `uv` and flags built here, no user input.
-        # uv lock --upgrade
         command,
         check=False,
         cwd=workdir,
+        stderr=subprocess.PIPE,
+        text=True,
     )
+    _ = sys.stderr.write(completed.stderr)
     try:
         completed.check_returncode()
     except subprocess.CalledProcessError as e:
-        if completed.stderr and ERROR_TEXT_PART_I_NON_EMPTY_LOCAL_SEGMENT in completed.stderr.decode():
+        if ERROR_TEXT_PART_I_NON_EMPTY_LOCAL_SEGMENT in completed.stderr:
             msg = (
                 "Failed to resolve dependencies with 'uv lock' due to non-empty local segments. "
                 "Please check your dependency specifications."

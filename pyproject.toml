@@ -42,9 +42,13 @@ dev = [
     # [testing]-[BEGIN]
     "pytest>=9.0.2",
     "pytest-benchmark>=5.2.3",
+    # Coverage gate
+    "pytest-cov>=7.0.0",
     # [testing]-[END]
     # Extra checker. Used by Zed.
     "basedpyright>=1.37.1",
+    # Linter and formatter (also a prek hook; here for `uv run ruff` and the poe tasks)
+    "ruff>=0.17.2",
     # Task runner
     "poethepoet>=0.40.0",
     # Dead code checker
@@ -90,7 +94,17 @@ quality = [
 
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers"
+addopts = "--strict-markers --strict-config --cov=uv_upx --cov-report=term-missing:skip-covered"
+xfail_strict = true
+# Warnings are errors: a deprecation is fixed when it appears, not when the API is gone.
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+# Never lower it to pass; raise it when the coverage grows.
+fail_under = 84
 
 [tool.mypy]
 plugins = [
@@ -98,6 +112,8 @@ plugins = [
 ]
 
 strict = true
+# A `type: ignore` must name the error code.
+enable_error_code = ["ignore-without-code"]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -179,3 +195,4 @@ runtime-evaluated-decorators = [
 
 [tool.basedpyright]
 typeCheckingMode = "all"
+failOnWarnings = true
