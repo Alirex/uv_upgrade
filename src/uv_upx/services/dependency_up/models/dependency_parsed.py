@@ -1,13 +1,11 @@
-from typing import Annotated
+from typing import Annotated, override
 
 from pydantic import AfterValidator, BaseModel, Field
 
 from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATOR, VERSION_OPERATORS_I_ALL
 from uv_upx.services.package_name import PackageName
 
-# TODO: (?) Use this?
-#   from packaging.specifiers import SpecifierSet
-#   from packaging.version import Version
+# TODO: (?) Use `SpecifierSet` and `Version` from the `packaging` package.
 
 
 def validate_version_value(value: str) -> str:
@@ -33,6 +31,7 @@ class VersionConstraint(BaseModel):
     operator: Annotated[VERSION_OPERATOR, AfterValidator(validate_operator)]
     version: Annotated[str, AfterValidator(validate_version_value)]
 
+    @override
     def __str__(self) -> str:
         return f"{self.operator}{self.version}"
 

@@ -2,7 +2,7 @@ import enum
 import subprocess
 from typing import TYPE_CHECKING
 
-from uv_upx.services.run_uv_related import UnresolvedDependencyError
+from uv_upx.services.run_uv_related.exceptions import UnresolvedDependencyError
 
 if TYPE_CHECKING:
     import pathlib
@@ -34,7 +34,7 @@ def run_uv_sync(
             pass
 
     try:
-        subprocess.run(  # noqa: S603
+        _ = subprocess.run(  # noqa: S603  # Fixed argv: `uv` and flags built here, no user input.
             command,
             check=True,
             cwd=workdir,

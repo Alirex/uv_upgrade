@@ -39,10 +39,14 @@ def ask_interactive_confirmation(
     print_formatted_text(HTML(f"Group: <b>{group_title}</b>"))
 
     message = HTML(
-        f"<ansiblue><b>{escape(changes_item.from_item.get_name_with_extras())}:</b></ansiblue> "
-        f"<ansired>{escape(changes_item.from_item.get_partial_spec())}</ansired>"
-        f" <ansiyellow>&#8594;</ansiyellow> "
-        f"<ansigreen>{escape(changes_item.to_item.get_partial_spec())}</ansigreen>",
+        "".join(
+            (
+                f"<ansiblue><b>{escape(changes_item.from_item.get_name_with_extras())}:</b></ansiblue> ",
+                f"<ansired>{escape(changes_item.from_item.get_partial_spec())}</ansired>",
+                " <ansiyellow>&#8594;</ansiyellow> ",
+                f"<ansigreen>{escape(changes_item.to_item.get_partial_spec())}</ansigreen>",
+            ),
+        ),
     )
 
     result = choice(

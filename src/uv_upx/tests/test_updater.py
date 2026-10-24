@@ -60,10 +60,10 @@ dependencies = [
 
 
 def _write_workspace(root: pathlib.Path) -> pathlib.Path:
-    (root / "pyproject.toml").write_text(ROOT_PYPROJECT)
+    _ = (root / "pyproject.toml").write_text(ROOT_PYPROJECT)
     member = root / "packages" / "context"
     member.mkdir(parents=True)
-    (member / "pyproject.toml").write_text(MEMBER_PYPROJECT)
+    _ = (member / "pyproject.toml").write_text(MEMBER_PYPROJECT)
     return member
 
 
@@ -101,6 +101,6 @@ def test_upgrade_workspace(tmp_path: pathlib.Path) -> None:
 def test_upgrade_workspace_with_pinned(tmp_path: pathlib.Path) -> None:
     member = _write_workspace(tmp_path)
 
-    _upgrade(tmp_path, UpgradeProfile.WITH_PINNED)
+    _ = _upgrade(tmp_path, UpgradeProfile.WITH_PINNED)
 
     assert '"pydantic==2.12.5"' in (member / "pyproject.toml").read_text()

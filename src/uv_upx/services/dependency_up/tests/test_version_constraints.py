@@ -48,7 +48,7 @@ def test_handle_version_constraint(
     version_new: str,
     expected: str,
 ) -> None:
-    handle_version_constraint(
+    _ = handle_version_constraint(
         version_constraint=version_constraint,
         version_new=Version(version_new),
     )

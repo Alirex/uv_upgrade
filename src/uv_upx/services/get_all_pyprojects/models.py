@@ -1,4 +1,5 @@
 import pathlib
+from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 from tomlkit import TOMLDocument
@@ -11,7 +12,7 @@ class PyProjectWrapper(BaseModel):
     path: PathToPyprojectToml
     data: TOMLDocument
 
-    model_config = ConfigDict(
+    model_config: ClassVar[ConfigDict] = ConfigDict(
         arbitrary_types_allowed=True,
     )
 

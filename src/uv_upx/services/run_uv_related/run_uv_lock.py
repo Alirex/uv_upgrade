@@ -22,15 +22,17 @@ def run_uv_lock(
     command = ["uv", "lock"]
     if upgrade:
         command.append("--upgrade")
+    # Note: `CompletedProcess` has the typed `stderr`. `CalledProcessError.stderr` is `Any`.
+    completed = subprocess.run(  # noqa: S603  # Fixed argv: `uv` and flags built here, no user input.
+        # uv lock --upgrade
+        command,
+        check=False,
+        cwd=workdir,
+    )
     try:
-        subprocess.run(  # noqa: S603
-            # uv lock --upgrade
-            command,
-            check=True,
-            cwd=workdir,
-        )
+        completed.check_returncode()
     except subprocess.CalledProcessError as e:
-        if e.stderr and ERROR_TEXT_PART_I_NON_EMPTY_LOCAL_SEGMENT in e.stderr.decode():
+        if completed.stderr and ERROR_TEXT_PART_I_NON_EMPTY_LOCAL_SEGMENT in completed.stderr.decode():
             msg = (
                 "Failed to resolve dependencies with 'uv lock' due to non-empty local segments. "
                 "Please check your dependency specifications."

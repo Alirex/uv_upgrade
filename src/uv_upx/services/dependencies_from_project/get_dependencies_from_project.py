@@ -5,7 +5,7 @@ from .parse_from_uv_lock import parse_from_uv_lock
 if TYPE_CHECKING:
     import pathlib
 
-    from . import DependenciesRegistry
+    from .models import DependenciesRegistry
 
 
 def get_dependencies_from_project(

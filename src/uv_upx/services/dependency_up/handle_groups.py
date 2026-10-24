@@ -69,16 +69,18 @@ def handle_py_project_v2(
 
                 elif verbose:
                     logger.info(
-                        f"Skipped change for {dependency_parsed.package_name} in {py_project.path.as_uri()}",
+                        "Skipped change for %s in %s",
+                        dependency_parsed.package_name,
+                        py_project.path.as_uri(),
                     )
 
     if changes or (profile is UpgradeProfile.WITH_PINNED):
         # Note: "(profile is UpgradeProfile.WITH_PINNED)" require some way to write back changes.
         toml_save(py_project.path, data)
-        logger.info(f"Saved changes to {py_project.path.as_uri()}")
+        logger.info("Saved changes to %s", py_project.path.as_uri())
 
         for change in changes:
-            logger.info(f"  {change}")
+            logger.info("  %s", change)
 
     return changes
 

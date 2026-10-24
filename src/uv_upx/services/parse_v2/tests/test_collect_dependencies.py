@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 def test_workspace_members_are_skipped(tmp_path: pathlib.Path) -> None:
-    (tmp_path / "pyproject.toml").write_text(
+    _ = (tmp_path / "pyproject.toml").write_text(
         """
 [project]
 name = "root"
@@ -28,7 +28,7 @@ members = ["packages/*"]
     )
     member_path = tmp_path / "packages" / "context"
     member_path.mkdir(parents=True)
-    (member_path / "pyproject.toml").write_text(
+    _ = (member_path / "pyproject.toml").write_text(
         """
 [project]
 name = "context"

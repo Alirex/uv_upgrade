@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from uv_upx.services.dependency_up.constants.operators import (
     VERSION_OPERATOR_I_GREATER_OR_EQUAL,
@@ -24,13 +24,12 @@ def update_dependency_v2(
     profile: UpgradeProfile,
 ) -> ChangesItem | None:
     """Updates the dependency version based on registry lookup."""
-    try:
-        version_new = dependencies_registry[parsed.package_name]
-    except KeyError:
+    version_new = dependencies_registry.root.get(parsed.package_name)
+    if version_new is None:
         # Note: raise error, because it now we have all the dependencies in the registry.
         msg = f"Dependency not found in the registry: {parsed.package_name}"
         logger = logging.getLogger(__name__)
-        logger.error(msg)  # noqa: TRY400
+        logger.error(msg)
         return None
 
     parsed_original = copy.deepcopy(parsed)
@@ -71,7 +70,7 @@ def handle_version_constraint(
     profile: UpgradeProfile = UpgradeProfile.DEFAULT,
     #
     verbose: bool = False,
-    dependency: Any | None = None,  # noqa: ANN401
+    dependency: object | None = None,
 ) -> IsHasChanges:
     """Handle a single version constraint.
 
@@ -93,9 +92,6 @@ def handle_version_constraint(
         if version_constraint.version != version_new:
             version_constraint.version = version_new
             is_has_changes = True
-        # else:
-        #     # Note: Workaround. Because we need to roll back the operator change.
-        #     is_has_changes = True
 
     elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
         if verbose and dependency:

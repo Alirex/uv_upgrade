@@ -1,6 +1,6 @@
 import re
 from re import Pattern
-from typing import Annotated, Final
+from typing import Annotated, ClassVar, Final, override
 
 from pydantic import AfterValidator, ConfigDict, RootModel
 
@@ -21,13 +21,15 @@ def normalize_package_name(package_name: str) -> str:
 class PackageName(RootModel[str]):
     root: Annotated[str, AfterValidator(normalize_package_name)]
 
+    @override
     def __str__(self) -> str:
         return self.root
 
+    @override
     def __hash__(self) -> int:
         # Note: Pydantic makes frozen models hashable at runtime, but type checkers do not see it.
         return hash(self.root)
 
-    model_config = ConfigDict(
+    model_config: ClassVar[ConfigDict] = ConfigDict(
         frozen=True,
     )
