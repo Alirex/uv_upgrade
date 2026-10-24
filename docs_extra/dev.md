@@ -45,11 +45,27 @@ prek --version
 
 Note: Run with self-update for installing the latest version of prek. Maybe they will provide a better script later.
 
+## Task runner
+
+[just](https://just.systems) is the entry point: `just` lists the recipes. The poe tasks in `pyproject.toml` still work.
+
+| Recipe                 | What it does                                                |
+| ---------------------- | ----------------------------------------------------------- |
+| `just dev-sync`        | `uv sync --all-packages`                                    |
+| `just dev-hooks`       | `prek install`                                              |
+| `just q-check`         | full gate: prek hooks, pytest, basedpyright, mypy           |
+| `just q-fast`          | prek hooks only                                             |
+| `just q-test`          | pytest                                                      |
+| `just rel-build`       | clean `dist` (except `.gitignore`) and `uv build`           |
+| `just rel-publish yes` | `uv publish`; without `yes` it only prints what it would do |
+
 ## Create venv
 
 ```bash
-uv sync --all-packages
+just dev-sync
 ```
+
+or `uv sync --all-packages`.
 
 ## Register pre-commit hooks
 
@@ -74,10 +90,10 @@ Don't need to do it after changing the hooks, commit or pull.
 If needed, run them manually.
 
 ```shell
-prek run --all-files
+just q-fast
 ```
 
-Useful after changing the hooks. Or just to check if everything is fine.
+(`prek run --all-files`). `just q-check` also runs pytest, basedpyright and mypy. Useful after changing the hooks. Or just to check if everything is fine.
 
 ## Update dependencies
 
@@ -126,3 +142,6 @@ uv build &&\
 uv publish &&\
 echo https://pypi.org/project/uv-upx
 ```
+
+Same with recipes: `uv version --bump patch && just dev-sync && just rel-build && just rel-publish yes`.
+Publish only with the maintainer's OK.

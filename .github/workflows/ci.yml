@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    # Hooks, tests and both type checkers.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --locked
+      - name: Hooks
+        # pre-commit-update bumps hook revisions: not a CI check.
+        run: uvx prek run --all-files --show-diff-on-failure
+        env:
+          SKIP: pre-commit-update
+      - run: uv run pytest
+      - run: uv run basedpyright
+      - run: uv run mypy src
+
+  test:
+    # The tool runs uv subprocesses: test on the other platforms too.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --locked
+      - run: uv run pytest
