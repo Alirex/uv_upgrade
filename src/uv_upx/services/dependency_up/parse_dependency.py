@@ -6,7 +6,7 @@ from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_
 from uv_upx.services.dependency_up.models.dependency_parsed import DependencyParsed, DependencyString, VersionConstraint
 from uv_upx.services.package_name import PackageName
 
-VERSION_OPERATORS_AS_OR: Final[str] = "|".join(sorted(VERSION_OPERATORS_I_ALL, key=lambda x: len(x), reverse=True))
+VERSION_OPERATORS_AS_OR: Final[str] = "|".join(sorted(VERSION_OPERATORS_I_ALL, key=len, reverse=True))
 
 # https://peps.python.org/pep-0440/#version-specifiers
 PATTERN_I_DEPENDENCY_STRING: Final[Pattern[str]] = re.compile(
