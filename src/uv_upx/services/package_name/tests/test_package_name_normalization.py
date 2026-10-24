@@ -1,6 +1,6 @@
 import pytest
 
-from uv_upx.services.package_name import normalize_package_name
+from uv_upx.services.package_name import PackageName, normalize_package_name
 
 
 @pytest.mark.parametrize(
@@ -23,3 +23,9 @@ def test_package_name_normalization(
 ) -> None:
     result = normalize_package_name(package_name)
     assert result == expected
+
+
+def test_package_name_equal_and_hashable() -> None:
+    assert PackageName("Foo_Bar") == PackageName("foo-bar")
+    assert PackageName("Foo_Bar") == PackageName("foo.bar")
+    assert {PackageName("foo-bar"): 1}[PackageName("FOO_BAR")] == 1
