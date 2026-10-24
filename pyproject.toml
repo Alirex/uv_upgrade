@@ -137,6 +137,8 @@ extend-ignore = [
     "ERA001",
     # empty-comment
     "PLR2044",
+    # Missing copyright notice (stable in ruff 0.17; the license is in LICENSE.txt).
+    "CPY001",
     #
     #
     # print used.
