@@ -1,10 +1,11 @@
 import itertools
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from tomlkit.items import Array, Table
+from tomlkit.items import Array
 
 from uv_upx.services.collect_dependencies.models import DependencyGroup, DependencySection
+from uv_upx.services.toml import get_arrays_in_table, get_node, is_table
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -21,13 +22,11 @@ def collect_i_main_dependency_group(
     """Check the main dependencies group."""
     logger = logging.getLogger(__name__)
 
-    project: dict[Any, Any] = data.get("project", {})  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
-
-    if not isinstance(project, dict):
+    if "project" in data and not is_table(get_node(data, "project")):
         logger.warning("No [project] table found in pyproject.toml")
         return
 
-    dependencies = project.get("dependencies", [])  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+    dependencies = get_node(data, "project", "dependencies")
     if not dependencies:
         return
 
@@ -37,7 +36,7 @@ def collect_i_main_dependency_group(
 
     yield DependencyGroup(
         section=DependencySection.MAIN,
-        dependencies=dependencies,  # pyright: ignore[reportUnknownArgumentType]
+        dependencies=dependencies,
     )
 
 
@@ -48,13 +47,10 @@ def collect_i_dependency_groups(
 
     https://docs.astral.sh/uv/concepts/projects/dependencies/#development-dependencies
     """
-    if groups := data.get("dependency-groups", {}):  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        yield from collect_dependency_groups_i_many(
-            groups=groups,  # pyright: ignore[reportUnknownArgumentType]
-            section=DependencySection.DEPENDENCY_GROUPS,
-        )
-    else:
-        return
+    yield from collect_dependency_groups_i_many(
+        groups=get_arrays_in_table(data, "dependency-groups"),
+        section=DependencySection.DEPENDENCY_GROUPS,
+    )
 
 
 def collect_i_optional_dependencies(
@@ -64,32 +60,24 @@ def collect_i_optional_dependencies(
 
     https://docs.astral.sh/uv/concepts/projects/dependencies/#optional-dependencies
     """
-    if groups := data.get("project", {}).get("optional-dependencies", {}):  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        yield from collect_dependency_groups_i_many(
-            groups=groups,  # pyright: ignore[reportUnknownArgumentType]
-            section=DependencySection.OPTIONAL_DEPENDENCIES,
-        )
-    else:
-        return
+    yield from collect_dependency_groups_i_many(
+        groups=get_arrays_in_table(data, "project", "optional-dependencies"),
+        section=DependencySection.OPTIONAL_DEPENDENCIES,
+    )
 
 
 def collect_dependency_groups_i_many(
     *,
-    groups: Table,
+    groups: dict[str, Array],
     #
     section: DependencySection,
 ) -> Iterable[DependencyGroup]:
-    """Check the dependency-groups table."""
-    for group_name, _group_val in groups.items():  # pyright: ignore[reportUnknownVariableType]
-        if not isinstance(_group_val, Array):
-            continue
-
-        group_val = _group_val  # pyright: ignore[reportUnknownVariableType]
-
+    """Make dependency groups from the arrays of a table."""
+    for group_name, dependencies in groups.items():
         yield DependencyGroup(
             section=section,
-            group_name=group_name,  # pyright: ignore[reportUnknownArgumentType]
-            dependencies=group_val,
+            group_name=group_name,
+            dependencies=dependencies,
         )
 
 

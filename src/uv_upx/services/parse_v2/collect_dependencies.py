@@ -11,6 +11,7 @@ from uv_upx.services.collect_dependencies.models import (
 )
 from uv_upx.services.dependency_up.parse_dependency import parse_dependency
 from uv_upx.services.get_all_pyprojects import PyProjectWrapper, get_all_pyprojects_by_project_root_path
+from uv_upx.services.toml import array_items
 from uv_upx.services.workspace_sources import get_workspace_source_names
 
 if TYPE_CHECKING:
@@ -43,11 +44,11 @@ def _parse_group_dependencies(
 
     parsed_dependencies: list[DependencyItemParsed] = []
 
-    for index, dependency in enumerate(group.dependencies):
+    for index, dependency in enumerate(array_items(group.dependencies)):
         if not isinstance(dependency, str):
             if verbose:
                 # https://docs.astral.sh/uv/concepts/projects/dependencies/#nesting-groups
-                logger.warning(f"Skipping non-string dependency: {dependency}")
+                logger.warning("Skipping non-string dependency: %s", dependency)
             continue
 
         parsed = parse_dependency(
@@ -57,7 +58,7 @@ def _parse_group_dependencies(
 
         if parsed.package_name in workspace_source_names:
             if verbose:
-                logger.info(f"Skipping workspace member: {dependency}")
+                logger.info("Skipping workspace member: %s", dependency)
             continue
 
         parsed_dependencies.append(
@@ -82,7 +83,7 @@ def collect_top_level_dependencies(
     logger = logging.getLogger(__name__)
 
     if verbose:
-        logger.info(f"Collect dependencies from project at: {project_root_path.as_uri()}")
+        logger.info("Collect dependencies from project at: %s", project_root_path.as_uri())
 
     py_projects = get_all_pyprojects_by_project_root_path(project_root_path)
 
@@ -96,9 +97,6 @@ def collect_top_level_dependencies(
         dependency_groups_parsed: list[DependencyGroupParsed] = []
 
         for group in collect_from_py_project(py_project.data):
-            # Note: With this we can show the string representation of dependencies. With comments.
-            # print(group.dependencies.as_string())
-
             parsed_dependencies = _parse_group_dependencies(
                 group,
                 workspace_source_names=workspace_source_names,
@@ -132,8 +130,3 @@ def collect_top_level_dependencies(
     return CollectedTopLevelDependencies(
         parsed_pyprojects=parsed_pyprojects,
     )
-
-
-# for index, _dependency in enumerate(deps_sequence_from_config):
-#     if changes_or_none is not None:
-#         deps_sequence_from_config[index] = changes_or_none.to_item.get_full_spec()
