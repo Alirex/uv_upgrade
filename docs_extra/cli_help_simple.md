@@ -17,6 +17,7 @@ $ run [OPTIONS]
 * `--no-sync`: Do not run uv-sync. In case of the complex build process. But, recommended to run with sync, for better chances for revealing problems.
 * `--profile [default|with_pinned]`: Which profile to use when upgrading dependencies. (Experimental feature)
 * `--interactive`: Enable interactive mode for selecting updates. (Experimental feature)
+* `--keep-unconstrained`: Leave dependencies written without a version constraint (like `bla`) as they are. By default they get a lower bound at the locked version.
 * `--version`: Show version and exit.
 * `--install-completion`: Install completion for the current shell.
 * `--show-completion`: Show completion for the current shell, to copy it or customize the installation.

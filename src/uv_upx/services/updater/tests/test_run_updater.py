@@ -108,6 +108,18 @@ def test_failed_lock_rolls_back(tmp_path: pathlib.Path, monkeypatch: pytest.Monk
     assert uv_lock.read_text() == LOCK_BEFORE
 
 
+def test_cli_keep_unconstrained(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    pyproject = tmp_path / "pyproject.toml"
+    _ = pyproject.write_text(PYPROJECT.replace('"httpx>=0.24.0"', '"httpx"'))
+    _ = (tmp_path / "uv.lock").write_text(LOCK_BEFORE)
+    _ = FakeUv(lock_after_upgrade=LOCK_AFTER).install(monkeypatch)
+
+    result = CliRunner().invoke(app, ["upgrade", "run", "--project", str(tmp_path), "--keep-unconstrained"])
+
+    assert result.exit_code == 0, result.output
+    assert pyproject.read_text() == PYPROJECT.replace('"httpx>=0.24.0"', '"httpx"')
+
+
 def test_cli_dry_run(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
     pyproject, _ = _project(tmp_path)
     fake = FakeUv(lock_after_upgrade=LOCK_AFTER).install(monkeypatch)

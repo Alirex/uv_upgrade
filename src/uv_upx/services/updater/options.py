@@ -16,4 +16,7 @@ class UpdaterOptions:
     #
     interactive: bool = False
     #
+    keep_unconstrained: bool = False
+    """Leave dependencies written without a version constraint as they are."""
+    #
     profile: UpgradeProfile = UpgradeProfile.DEFAULT

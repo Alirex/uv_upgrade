@@ -8,6 +8,13 @@ from uv_upx.services.normalize_paths import normalize_and_check_path_to_project_
 from uv_upx.services.updater import UpdaterOptions, run_updater
 from uv_upx.services.upgrade_profile import UpgradeProfile
 
+KEEP_UNCONSTRAINED_HELP = " ".join(
+    (
+        "Leave dependencies written without a version constraint (like `bla`) as they are.",
+        "By default they get a lower bound at the locked version.",
+    ),
+)
+
 NO_SYNC_HELP = " ".join(
     (
         "Do not run uv-sync.",
@@ -79,6 +86,14 @@ def run(  # noqa: PLR0913  # Typer maps each CLI option to its own parameter, th
         ),
     ] = False,
     #
+    keep_unconstrained: Annotated[
+        bool,
+        typer.Option(
+            "--keep-unconstrained",
+            help=KEEP_UNCONSTRAINED_HELP,
+        ),
+    ] = False,
+    #
     _version: Annotated[
         bool | None,
         typer.Option(
@@ -101,6 +116,8 @@ def run(  # noqa: PLR0913  # Typer maps each CLI option to its own parameter, th
             no_sync=no_sync,
             #
             interactive=interactive,
+            #
+            keep_unconstrained=keep_unconstrained,
             #
             profile=profile or UpgradeProfile.get_default(),
         ),

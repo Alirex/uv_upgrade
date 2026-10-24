@@ -5,6 +5,7 @@ from safe_result import Err, Ok
 
 from uv_upx.services.dependencies_from_project import get_dependencies_from_project
 from uv_upx.services.dependency_up.handle_groups import handle_py_projects_v2
+from uv_upx.services.dependency_up.models.update_options import DependencyUpdateOptions
 from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
 from uv_upx.services.local_segments.exceptions import NonEmptyLocalSegmentsError
 from uv_upx.services.normalize_paths import get_and_check_path_to_uv_lock
@@ -96,9 +97,12 @@ def _apply_updates(
         #
         verbose=options.verbose,
         #
-        profile=options.profile,
-        #
         interactive=options.interactive,
+        #
+        update_options=DependencyUpdateOptions(
+            profile=options.profile,
+            keep_unconstrained=options.keep_unconstrained,
+        ),
     ):
         return False
 

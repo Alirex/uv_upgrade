@@ -1,12 +1,15 @@
 """A fake `uv` for tests: records the commands and plays `uv lock` and `uv sync` without the network."""
 
 import dataclasses
-import pathlib
 import subprocess
-
-import pytest
+from typing import TYPE_CHECKING
 
 from uv_upx.services.normalize_paths import NAME_OF_UV_LOCK_FILE
+
+if TYPE_CHECKING:
+    import pathlib
+
+    import pytest
 
 
 @dataclasses.dataclass(kw_only=True)
