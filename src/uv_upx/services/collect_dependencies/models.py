@@ -1,4 +1,5 @@
 import enum
+from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,7 +22,7 @@ class DependencyGroup(BaseModel):
 
     group_name: GroupNameOrNone = None
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
 
 
 class DependencyItemParsed(BaseModel):

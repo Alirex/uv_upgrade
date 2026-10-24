@@ -27,6 +27,6 @@ def get_pyproject_paths_by_globs(
             else:
                 # sourcery skip: remove-redundant-pass
                 # Explicit skip for other cases
-                logger.warning(f"Skipping {path.as_uri()}: not a file or directory.")
+                logger.warning("Skipping %s: not a file or directory.", path.as_uri())
 
     return paths
