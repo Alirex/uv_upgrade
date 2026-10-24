@@ -16,6 +16,8 @@ from uv_upx.services.workspace_sources import get_workspace_source_names
 if TYPE_CHECKING:
     import pathlib
 
+    from uv_upx.services.package_name import PackageName
+
 
 class PyProjectWrapperExtra(PyProjectWrapper):
     dependency_groups_parsed: list[DependencyGroupParsed] = Field(
@@ -30,7 +32,7 @@ class CollectedTopLevelDependencies(BaseModel):
 def _parse_group_dependencies(
     group: DependencyGroup,
     *,
-    workspace_source_names: set[str],
+    workspace_source_names: set[PackageName],
     #
     preserve_original_package_names: bool,
     #
@@ -53,7 +55,7 @@ def _parse_group_dependencies(
             preserve_original_package_names=preserve_original_package_names,
         )
 
-        if str(parsed.package_name) in workspace_source_names:
+        if parsed.package_name in workspace_source_names:
             if verbose:
                 logger.info(f"Skipping workspace member: {dependency}")
             continue
