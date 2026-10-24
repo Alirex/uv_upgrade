@@ -93,11 +93,16 @@ quality = [
 addopts = "--strict-markers"
 
 [tool.mypy]
-#plugins = [
-#    "pydantic.mypy",
-#]
+plugins = [
+    "pydantic.mypy",
+]
 
 strict = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.ruff]
 line-length = 120
@@ -113,35 +118,21 @@ extend-select = [
     "ALL",
 ]
 extend-ignore = [
-    # Missing docstring.
+    # D1: Missing docstring. Names and types describe most of the code; 160+ places would need filler text.
     "D1",
-    # flake8-future-annotations.
-    "FA",
-    # Missing type annotation for self and cls.
-    "ANN1",
-    # f-strings to format logging messages.
-    "G004",
-    # Consider {expression} instead of string join.
+    # FLY002: Consider an f-string instead of `str.join`. Long messages are built with `join` on purpose
+    # (explicit concatenation: implicit one is banned by basedpyright, `+` by ISC003).
     "FLY002",
-    # TODOs
-    # Author.
+    # TD002, TD003: TODO needs an author and an issue link. TODOs are free-form notes of the maintainer.
     "TD002",
-    # Link to issue
     "TD003",
-    # Line contains a TODO or related comment
+    # FIX: Line contains a TODO or related comment. TODOs are allowed as notes.
     "FIX",
-    # Args and kwargs are not used and not annotated
-    "ANN002",
-    "ANN003",
-    # Commented code
-    "ERA001",
-    # empty-comment
+    # PLR2044: Empty comment. A bare "#" separates groups of arguments, the formatter keeps them.
     "PLR2044",
-    # Missing copyright notice (stable in ruff 0.17; the license is in LICENSE.txt).
+    # CPY001: Missing copyright notice in a file (the license is in LICENSE.txt).
     "CPY001",
-    #
-    #
-    # print used.
+    # T201: `print` used. It is the output of the CLI (stdout), the logging goes to `logging`.
     "T201",
 ]
 
@@ -167,6 +158,11 @@ allow-dict-calls-with-keyword-arguments = true
     "F401",
 ]
 
+"src/uv_upx/cli/**/main.py" = [
+    # Typer reads the annotations of the commands at runtime, so `pathlib` must be imported at runtime.
+    "TC003",
+]
+
 "test_*.py" = [
     # Allow `assert` statements in tests.
     "S101",
@@ -182,4 +178,4 @@ runtime-evaluated-decorators = [
 ]
 
 [tool.basedpyright]
-typeCheckingMode = "strict"
+typeCheckingMode = "all"
