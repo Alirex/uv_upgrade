@@ -24,6 +24,10 @@ class PackageName(RootModel[str]):
     def __str__(self) -> str:
         return self.root
 
+    def __hash__(self) -> int:
+        # Note: Pydantic makes frozen models hashable at runtime, but type checkers do not see it.
+        return hash(self.root)
+
     model_config = ConfigDict(
         frozen=True,
     )
