@@ -3,7 +3,8 @@ exclude: |
     \.idea/.*|
     docs_extra/cli_help_simple.md|
     docs_extra/cli_help_advanced.md|
-    README.remotified.md
+    README.remotified.md|
+    rust/uv_upx/tests/snapshots/.*\.snap
     )$
 
 repos:
@@ -123,4 +124,21 @@ repos:
         language: system
         pass_filenames: false
         # hook will execute using a single process instead of in parallel
+        require_serial: true
+
+      - id: cargo-fmt
+        # Format the Rust crate (rust/uv_upx); the gate also runs `cargo clippy` and `cargo test` (justfile).
+        name: cargo-fmt
+        entry: cargo fmt --all
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+      - id: cargo-clippy
+        # Lint the Rust crate: pedantic as warnings, warnings as errors (Cargo.toml [workspace.lints]).
+        name: cargo-clippy
+        entry: cargo clippy --all-targets -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
         require_serial: true

@@ -23,10 +23,10 @@ jobs:
           enable-cache: true
       - run: uv sync --all-packages --locked
       - name: Hooks
-        # pre-commit-update bumps hook revisions: not a CI check.
+        # pre-commit-update bumps hook revisions: not a CI check. The cargo hooks run in the rust job.
         run: uvx prek run --all-files --show-diff-on-failure
         env:
-          SKIP: pre-commit-update
+          SKIP: pre-commit-update,cargo-fmt,cargo-clippy
       - run: uv run pytest
       - run: uv run basedpyright
       - run: uv run mypy src
@@ -45,3 +45,24 @@ jobs:
           enable-cache: true
       - run: uv sync --all-packages --locked
       - run: uv run pytest
+
+  rust:
+    # The Rust port (rust/uv_upx): format, pedantic clippy, tests. The venv gives the parity tests the Python CLI.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: uv sync --all-packages --locked
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test

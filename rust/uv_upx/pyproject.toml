@@ -1,0 +1,28 @@
+# The PyPI wheel of the Rust binaries (maturin, `bindings = "bin"`): `uvx maturin build --release -m rust/uv_upx/Cargo.toml`.
+# A separate file from the root pyproject.toml, so the Python package keeps building until the switch-over
+# (docs_extra/rust_rework.md); at the switch the root file takes this content.
+[project]
+name = "uv-upx"
+# maturin takes the version from Cargo.toml (the workspace version); the root pyproject.toml and a test keep them equal.
+dynamic = ["version"]
+description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
+keywords = ["uv", "upgrade", "dependencies", "pyproject.toml", "automation", "cli"]
+license = "MIT"
+authors = [{ name = "Alirex", email = "alirex.prime@gmail.com" }]
+# No Python runs: the wheel ships two executables. Any interpreter is fine for `uv tool install`.
+requires-python = ">=3.9"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Alirex/uv_upgrade"
+Repository = "https://github.com/Alirex/uv_upgrade"
+Issues = "https://github.com/Alirex/uv_upgrade/issues"
+
+[build-system]
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = "bin"
+# Build both [[bin]] targets of the crate.
+strip = true
