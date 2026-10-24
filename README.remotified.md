@@ -50,6 +50,14 @@ Or run advanced version with uvx:
 uvx uv-upx
 ```
 
+Or the short command with uvx:
+
+```shell
+uvx --from uv-upx uv-upgrade
+```
+
+Note: `uvx uv-upgrade` (without `--from uv-upx`) runs a different package, [uv-upgrade](https://pypi.org/project/uv-upgrade/), not this one.
+
 Dev installation: [see here](https://github.com/Alirex/uv_upgrade/blob/main/docs_extra/dev.md#install-app-system-wide-in-development-mode)
 
 ## Check that project in the list
