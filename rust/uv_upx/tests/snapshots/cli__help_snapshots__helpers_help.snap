@@ -1,0 +1,11 @@
+---
+source: rust/uv_upx/tests/cli.rs
+expression: "stdout(&run(uv_upx().args([\"helpers\", \"--help\"])))"
+---
+Usage: uv-upx helpers <COMMAND>
+
+Commands:
+  collect-top-level-dependencies-from-project  Collect top-level dependencies from the project.
+
+Options:
+      --help  Show this message and exit.

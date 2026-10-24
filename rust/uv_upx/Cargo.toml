@@ -1,0 +1,48 @@
+[package]
+name = "uv-upx"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Upgrade versions of dependencies in pyproject.toml files in uv-managed projects."
+keywords = ["uv", "upgrade", "dependencies", "pyproject", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+publish = false
+default-run = "uv-upx"
+
+[lib]
+name = "uv_upx"
+path = "src/lib.rs"
+
+[[bin]]
+name = "uv-upx"
+path = "src/bin/uv-upx.rs"
+
+[[bin]]
+name = "uv-upgrade"
+path = "src/bin/uv-upgrade.rs"
+
+[dependencies]
+# CLI (derive) and shell completion scripts
+clap = { version = "4.6", features = ["derive"] }
+clap_complete = "4.6"
+# Format-preserving TOML editing (replaces tomlkit)
+toml_edit = "0.25"
+# The dependency-string parser is a port of the Python regexes: the output must stay byte-identical
+regex = "1.13"
+# Workspace member patterns
+glob = "0.3"
+# Log timestamps in Python's `logging` format
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+# Interactive accept/reject prompt (replaces prompt-toolkit)
+inquire = { version = "0.9", default-features = false, features = ["crossterm"] }
+# Error types
+thiserror = "2"
+
+[dev-dependencies]
+insta = "1.49"
+tempfile = "3"
+
+[lints]
+workspace = true

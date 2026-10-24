@@ -1,0 +1,32 @@
+# Cargo workspace of the Rust port. The crate lives in `rust/uv_upx`; the Python package in `src/uv_upx` stays until
+# the switch-over (docs_extra/rust_rework.md).
+[workspace]
+resolver = "3"
+members = ["rust/uv_upx"]
+
+[workspace.package]
+# Keep in step with `project.version` in pyproject.toml (a test checks it).
+version = "0.5.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT"
+repository = "https://github.com/Alirex/uv_upgrade"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# An escape hatch names its reason and stays needed (`#[expect]`): practices/lint-strictness.md.
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+dbg_macro = "warn"
+todo = "warn"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

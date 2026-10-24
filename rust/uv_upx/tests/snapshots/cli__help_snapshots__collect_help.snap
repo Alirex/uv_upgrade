@@ -1,0 +1,17 @@
+---
+source: rust/uv_upx/tests/cli.rs
+expression: "stdout(&run(uv_upx().args([\"helpers\",\n\"collect-top-level-dependencies-from-project\", \"--help\"])))"
+---
+Collect top-level dependencies from the project.
+
+Usage: uv-upx helpers collect-top-level-dependencies-from-project [OPTIONS]
+
+Options:
+  -p, --project <PATH>
+          Path to project root directory. Use current working directory if not specified.
+      --only-special-cases
+          Collect only complex and unhandled dependencies
+      --preserve-original-package-names
+          Preserve original package names in pyproject.toml
+      --help
+          Show this message and exit.
