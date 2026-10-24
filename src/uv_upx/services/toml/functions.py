@@ -18,9 +18,9 @@ def toml_load(path: Path) -> TOMLDocument:
 
 
 def toml_dumps(data: TOMLDocument) -> str:
-    return tomlkit.dumps(data)  # pyright: ignore[reportUnknownMemberType]
+    return data.as_string()
 
 
 def toml_save(path: Path, data: TOMLDocument) -> None:
     text = toml_dumps(data)
-    path.write_text(text, encoding="utf-8")
+    _ = path.write_text(text, encoding="utf-8")

@@ -5,6 +5,7 @@ from uv_upx.services.collect_dependencies.collect_groups_from_py_project import 
 from uv_upx.services.dependency_up.constants.operators import VERSION_OPERATORS_I_PUT_IF_DIFFERENT
 from uv_upx.services.dependency_up.parse_dependency import parse_dependency
 from uv_upx.services.get_all_pyprojects import get_all_pyprojects_by_project_root_path
+from uv_upx.services.toml import array_items
 
 if TYPE_CHECKING:
     import pathlib
@@ -23,7 +24,7 @@ def filter_dependencies(
     #
     preserve_original_package_names: bool = False,
 ) -> Iterable[DependencyParsed]:
-    for dep in dependencies:  # pyright: ignore[reportUnknownVariableType]
+    for dep in array_items(dependencies):
         if not isinstance(dep, str):
             continue
 
