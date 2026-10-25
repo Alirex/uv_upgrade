@@ -10,12 +10,12 @@ $ run [OPTIONS]
 
 **Options**:
 
-* `-p, --project PATH`: Path to project root directory. Use current working directory if not specified.
+* `-p, --project <path>`: Path to project root directory. Use current working directory if not specified.
 * `--dry-run`: Show changes without writing file
 * `--verbose`: Show more output
 * `--preserve-original-package-names`: Preserve original package names in pyproject.toml
 * `--no-sync`: Do not run uv-sync. In case of the complex build process. But, recommended to run with sync, for better chances for revealing problems.
-* `--profile [default|with_pinned]`: Which profile to use when upgrading dependencies. (Experimental feature)
+* `--profile <default|with_pinned>`: Which profile to use when upgrading dependencies. (Experimental feature)
 * `--interactive`: Enable interactive mode for selecting updates. (Experimental feature)
 * `--keep-unconstrained`: Leave dependencies written without a version constraint (like `bla`) as they are. By default they get a lower bound at the locked version.
 * `--version`: Show version and exit.

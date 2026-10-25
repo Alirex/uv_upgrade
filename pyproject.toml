@@ -48,7 +48,7 @@ dev = [
     # Extra checker. Used by Zed.
     "basedpyright>=1.37.1",
     # Linter and formatter (also a prek hook; here for `uv run ruff` and the poe tasks)
-    "ruff>=0.17.2",
+    "ruff>=0.17.1",
     # Task runner
     "poethepoet>=0.40.0",
     # Dead code checker
@@ -66,7 +66,7 @@ uv-upgrade = "uv_upx:main_short"
 uv-upx = "uv_upx:main"
 
 [build-system]
-requires = ["uv_build>=0.9.15,<0.10.0"]
+requires = ["uv_build>=0.13.0,<0.14.0"]
 build-backend = "uv_build"
 
 [tool.poe.tasks]
@@ -195,3 +195,7 @@ runtime-evaluated-decorators = [
 [tool.basedpyright]
 typeCheckingMode = "all"
 failOnWarnings = true
+
+[tool.uv]
+# Minimum release age (HQ supply-chain practice): nothing younger than a week is locked.
+exclude-newer = "7 days"
