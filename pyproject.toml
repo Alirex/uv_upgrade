@@ -123,7 +123,6 @@ warn_required_dynamic_aliases = true
 [tool.ruff]
 line-length = 120
 fix = true
-unsafe-fixes = true
 show-fixes = true
 
 extend-exclude = [

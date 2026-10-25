@@ -2,7 +2,7 @@
 
 ## Uv install or update
 
-https://docs.astral.sh/uv/getting-started/installation/
+<https://docs.astral.sh/uv/getting-started/installation/>
 
 ```bash
 if ! command -v uv &> /dev/null; then
@@ -16,7 +16,7 @@ uv --version
 
 ## Ruff install or update
 
-https://docs.astral.sh/ruff/installation/
+<https://docs.astral.sh/ruff/installation/>
 
 ```bash
 if ! command -v ruff &> /dev/null; then
@@ -54,6 +54,7 @@ Note: Run with self-update for installing the latest version of prek. Maybe they
 | `just dev-sync`        | `uv sync --all-packages`                                    |
 | `just dev-hooks`       | `prek install`                                              |
 | `just q-check`         | full gate: prek hooks, pytest, basedpyright, mypy           |
+| `just q-lint`          | ruff with unsafe fixes, by hand (review `git diff`)         |
 | `just q-fast`          | prek hooks only                                             |
 | `just q-test`          | pytest                                                      |
 | `just rel-build`       | clean `dist` (except `.gitignore`) and `uv build`           |
@@ -109,7 +110,7 @@ fi
 uv-upgrade --version
 ```
 
-### Update dependencies
+### Update dependencies (before a release)
 
 ```shell
 cd $(git rev-parse --show-toplevel) &&\

@@ -1,0 +1,7 @@
+# Structural markdown checks; prettier formats the files.
+default: true
+MD013: false # line length: prettier and long tables/links own the layout
+MD025: false # README.md and docs_extra/dev.md are one document per topic with an H1 per section (README is the PyPI readme)
+MD033:
+  allowed_elements: [br] # line breaks inside table cells (other_similar_tools_comparison.md)
+MD041: false # CLAUDE.md is the one-line import `@AGENTS.md`

@@ -6,10 +6,10 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default:
     @just --list
 
-# Full gate: prek hooks, pytest, basedpyright, mypy. Run again if fixers changed files.
+# Full gate: prek hooks, pytest, basedpyright, mypy (each once). Run again if fixers changed files.
 [group('quality')]
 q-check:
-    prek run --all-files
+    SKIP=pre-commit-update prek run --all-files
     uv run pytest
     uv run basedpyright
     uv run mypy src
@@ -17,7 +17,12 @@ q-check:
 # Fast loop: prek hooks only (formatters, ruff, generated docs).
 [group('quality')]
 q-fast:
-    prek run --all-files
+    SKIP=pre-commit-update prek run --all-files
+
+# Ruff with unsafe fixes, by hand. Review `git diff` after.
+[group('quality')]
+q-lint:
+    uv run ruff check --fix --unsafe-fixes
 
 # Run the tests.
 [group('quality')]
@@ -29,7 +34,7 @@ q-test *args:
 dev-sync:
     uv sync --all-packages
 
-# Install the git hooks (once per clone).
+# Install the git hooks, commit and push (once per clone).
 [group('dev')]
 dev-hooks:
     prek install
@@ -46,7 +51,7 @@ rel-build:
 rel-publish confirm="no":
     #!/usr/bin/env bash
     set -euo pipefail
-    if [ "{{ confirm }}" != "yes" ]; then
+    if [[ "{{ confirm }}" != "yes" ]]; then
         echo "Publishing needs the maintainer's OK. Would run: uv publish"
         echo "Rerun with: just rel-publish yes"
         exit 1
