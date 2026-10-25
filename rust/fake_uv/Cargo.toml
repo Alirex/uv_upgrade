@@ -1,0 +1,18 @@
+# The fake `uv` of the tests (rust/uv_upx/tests): a workspace member, so it is not a binary of the `uv-upx` crate and
+# stays out of the maturin wheel. The tests build it with cargo and put it on `PATH` as `uv`.
+[package]
+name = "fake-uv"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Fake uv for the tests of uv-upx: records the calls, plays lock and sync, fails on request."
+publish = false
+
+[[bin]]
+name = "fake-uv"
+path = "src/main.rs"
+
+[lints]
+workspace = true

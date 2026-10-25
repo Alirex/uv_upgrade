@@ -16,6 +16,7 @@ CLI shape).
 | `rust/uv_upx/tests/cli.rs`     | The CLI and the upgrade flow through the binaries with a fake `uv` (counterparts of the pytest)   |
 | `rust/uv_upx/tests/parity.rs`  | Both CLIs on identical fixtures: files, stdout, log lines, exit codes and `uv` calls must match   |
 | `rust/uv_upx/tests/snapshots/` | `insta` snapshots of the help texts                                                               |
+| `rust/fake_uv/`                | The fake `uv` of the tests (a workspace member, never shipped); built by the tests themselves     |
 | `rust/uv_upx/pyproject.toml`   | The maturin project of the wheel (`bindings = "bin"`); not a uv workspace member                  |
 | `src/uv_upx/`                  | The Python package, unchanged, still what `uv build` and PyPI ship                                |
 
@@ -119,9 +120,11 @@ suites.
 
 ## Open items
 
-- Windows: the fake `uv` of the tests is a shell script, so the flow and parity tests are Unix-only (`#[cfg(unix)]`);
-  the unit tests and the CLI argument tests run everywhere. A `.cmd` fake, or a tiny Rust fake-uv binary, would
-  cover Windows in CI.
+- Windows: the fake `uv` of the tests is now the binary of the workspace crate `rust/fake_uv` (the tests build it
+  with cargo and copy it on `PATH` as `uv`), but the flow and parity tests are still `#[cfg(unix)]`: before they
+  run on `windows-latest`, `path_as_uri` must keep the drive colon (`file:///C:/…`), the parity normalization must
+  cope with `\\?\` canonical paths and Python's CRLF writes, the clap commands need a fixed `bin_name` for the help
+  snapshots, and `project_must_be_a_directory` must not use `/nonexistent/path`.
 - `helpers collect-top-level-dependencies-from-project` prints nothing without `--only-special-cases` in both
   implementations (the Python `filter_dependencies` yields only inside that branch); kept for parity, worth fixing in
   both.
