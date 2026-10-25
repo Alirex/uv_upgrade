@@ -71,6 +71,12 @@ repos:
       - id: prettier
         files: \.(json|ya?ml|md)$
 
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    # Workflow security: unpinned actions, excess permissions, template injection.
+    rev: v1.31.1
+    hooks:
+      - id: zizmor
+
   - repo: https://github.com/gitleaks/gitleaks
     # Secret scanning of the staged changes on every commit (prek builds the Go binary itself).
     # Whole-history scan: `just q-secrets` (the manual-stage twin below).
