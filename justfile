@@ -24,6 +24,11 @@ q-fast:
 q-lint:
     uv run ruff check --fix --unsafe-fixes
 
+# Scan the whole git history for leaked secrets (gitleaks; monthly and when adopting).
+[group('quality')]
+q-secrets:
+    prek run gitleaks-history --hook-stage manual --all-files
+
 # Run the tests.
 [group('quality')]
 q-test *args:
