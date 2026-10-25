@@ -49,16 +49,18 @@ Note: Run with self-update for installing the latest version of prek. Maybe they
 
 [just](https://just.systems) is the entry point: `just` lists the recipes. The poe tasks in `pyproject.toml` still work.
 
-| Recipe                 | What it does                                                |
-| ---------------------- | ----------------------------------------------------------- |
-| `just dev-sync`        | `uv sync --all-packages`                                    |
-| `just dev-hooks`       | `prek install`                                              |
-| `just q-check`         | full gate: prek hooks, pytest, basedpyright, mypy           |
-| `just q-lint`          | ruff with unsafe fixes, by hand (review `git diff`)         |
-| `just q-fast`          | prek hooks only                                             |
-| `just q-test`          | pytest                                                      |
-| `just rel-build`       | clean `dist` (except `.gitignore`) and `uv build`           |
-| `just rel-publish yes` | `uv publish`; without `yes` it only prints what it would do |
+| Recipe                 | What it does                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `just dev-sync`        | `uv sync --all-packages`                                                                         |
+| `just dev-hooks`       | `prek install`                                                                                   |
+| `just q-check`         | full gate: prek hooks, pytest, basedpyright, mypy                                                |
+| `just q-lint`          | ruff with unsafe fixes, by hand (review `git diff`)                                              |
+| `just q-fast`          | prek hooks only                                                                                  |
+| `just q-test`          | pytest                                                                                           |
+| `just rel-build`       | clean `dist` (except `.gitignore`) and `uv build`                                                |
+| `just rel-check [tag]` | fails unless the tag (default `v<version>`) equals the version and the changelog has its section |
+| `just rel-notes <ver>` | prints that version's changelog section (the GitHub release notes)                               |
+| `just rel-tag`         | checks, runs the gate, tags `v<version>` on `main` and pushes the tag                            |
 
 ## Create venv
 
@@ -126,23 +128,21 @@ cd $(git rev-parse --show-toplevel) &&\
 uv tool install --editable .
 ```
 
-## Bump, Build and Publish
+## Release (tag-triggered)
 
-Update the version in pyproject.toml,
-update `uv.lock`,
-clean `dist` (except `.gitignore`),
-build the package
-and publish to PyPI.
+Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`: it checks the tag against the version, runs the tests,
+builds, publishes to PyPI with trusted publishing (no token; job `environment: release`) and creates the GitHub
+release from the changelog section. There are no local PyPI credentials: do not run `uv publish`.
 
-```shell
-cd $(git rev-parse --show-toplevel) &&\
-uv version --bump patch &&\
-uv sync --all-packages &&\
-find dist -type f -not -name '.gitignore' -delete &&\
-uv build &&\
-uv publish &&\
-echo https://pypi.org/project/uv-upx
-```
+1. Update dependencies (see above), land the user-visible changes with their `CHANGELOG.md` lines under `Unreleased`.
+2. `uv version --bump minor` (or `patch`), `just dev-sync`; rename `Unreleased` to `[X.Y.Z] - date` in
+   `CHANGELOG.md`, add a fresh `Unreleased` and the compare links; `just q-check`; commit and push to `main`.
+3. Wait for green CI on `main`, then `just rel-tag`.
+4. Watch `gh run list -R Alirex/uv_upgrade --workflow release.yml`; check <https://pypi.org/project/uv-upx>.
 
-Same with recipes: `uv version --bump patch && just dev-sync && just rel-build && just rel-publish yes`.
-Publish only with the maintainer's OK.
+One-time setup (PyPI, by the maintainer): trusted publisher for project `uv-upx`: owner `Alirex`, repository
+`uv_upgrade`, workflow `release.yml`, environment `release`. Until it exists the `publish` job fails; after adding it,
+`gh run rerun <run-id> -R Alirex/uv_upgrade --failed`.
+
+`README.remotified.md` (the PyPI readme, `readme` in `pyproject.toml`) is generated from `README.md` by the
+`mdremotifier` prek hook, which `just q-check` and CI run with `--all-files`; commit it with README changes.
