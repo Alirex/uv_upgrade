@@ -71,6 +71,20 @@ repos:
       - id: prettier
         files: \.(json|ya?ml|md)$
 
+  - repo: https://github.com/gitleaks/gitleaks
+    # Secret scanning of the staged changes on every commit (prek builds the Go binary itself).
+    # Whole-history scan: `just q-secrets` (the manual-stage twin below).
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+        # Fails on a leaked key or token. Never allowlist a real secret: rotate it, then rewrite the history.
+      - id: gitleaks
+        alias: gitleaks-history
+        name: gitleaks (whole history)
+        entry: gitleaks git --redact --verbose
+        stages: [manual]
+        always_run: true
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.17.2

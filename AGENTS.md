@@ -23,6 +23,8 @@
   `just q-test`: pytest. `just q-lint`: `ruff check --fix --unsafe-fixes` by hand; review `git diff` after.
 - Hooks: shellcheck (`shellcheck-py`, `.shellcheckrc` `enable=all`), markdownlint (`.markdownlint.yaml`), format-justfile.
   `just dev-hooks` installs the commit and push hooks.
+- `just q-secrets`: gitleaks over the whole history (the commit hook scans staged changes); a real hit is rotated,
+  never allowlisted.
 - `just dev-sync`: `uv sync --all-packages`. `just rel-build`: clean `dist/` and build.
 - Prek fixers rewrite files; run the gate again until it passes.
 - Never commit the version bump of the `pre-commit-update` hook unasked.
