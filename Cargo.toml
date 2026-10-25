@@ -1,8 +1,8 @@
 # Cargo workspace of the Rust port. The crate lives in `rust/uv_upx`; the Python package in `src/uv_upx` stays until
-# the switch-over (docs_extra/rust_rework.md).
+# the switch-over (docs_extra/rust_rework.md). `rust/fake_uv` is the fake `uv` of the tests (never shipped).
 [workspace]
 resolver = "3"
-members = ["rust/uv_upx"]
+members = ["rust/uv_upx", "rust/fake_uv"]
 
 [workspace.package]
 # Keep in step with `project.version` in pyproject.toml (a test checks it).

@@ -1,13 +1,14 @@
 //! Shared helpers of the integration tests: a fake `uv` on `PATH` and fixture projects.
 //!
-//! The fake `uv` is a shell script (Unix only): it records every call, plays `uv lock --upgrade` by copying a
-//! prepared lock file into place, and fails on request, like `fake_uv.py` of the Python tests.
+//! The fake `uv` is the binary of the workspace crate `rust/fake_uv`: it records every call, plays `uv lock --upgrade`
+//! by copying a prepared lock file into place, and fails on request, like `fake_uv.py` of the Python tests.
 
 #![expect(dead_code, reason = "each test binary uses a different subset of the helpers")]
 #![expect(clippy::unwrap_used, reason = "a test panics on an unexpected value")]
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+use std::sync::OnceLock;
 
 use tempfile::TempDir;
 
@@ -20,28 +21,28 @@ pub struct FakeUv {
     sync_fails: bool,
 }
 
-const SCRIPT: &str = r#"#!/usr/bin/env bash
-set -eu
-printf 'uv %s\n' "$*" >> "$FAKE_UV_LOG"
-case "${1:-}" in
-  lock)
-    for arg in "$@"; do
-      if [ "$arg" = "--upgrade" ]; then cp "$FAKE_UV_LOCK_AFTER" uv.lock; fi
-    done
-    fail=1
-    if [ "${FAKE_UV_LOCK_FAIL_ONCE:-0}" = 1 ] && [ "$(grep -c '^uv lock' "$FAKE_UV_LOG")" -gt 1 ]; then fail=0; fi
-    if [ "$fail" = 1 ] && [ "${FAKE_UV_LOCK_RC:-0}" != 0 ]; then
-      if [ -n "${FAKE_UV_LOCK_STDERR:-}" ]; then printf '%s' "$FAKE_UV_LOCK_STDERR" >&2; fi
-      exit "${FAKE_UV_LOCK_RC}"
-    fi
-    ;;
-  sync)
-    if [ "${FAKE_UV_SYNC_FAILS:-0}" = 1 ]; then
-      case " $* " in *" --frozen "*) exit 0 ;; *) exit 1 ;; esac
-    fi
-    ;;
-esac
-"#;
+/// The fake `uv` binary (the workspace crate `rust/fake_uv`), built once per test binary with the cargo of this
+/// build into the same target directory, so `cargo test` needs nothing else.
+fn fake_uv_binary() -> &'static Path {
+    static BINARY: OnceLock<PathBuf> = OnceLock::new();
+    BINARY.get_or_init(|| {
+        let uv_upx = Path::new(env!("CARGO_BIN_EXE_uv-upx"));
+        let profile_dir = uv_upx.parent().unwrap();
+        let profile_name = profile_dir.file_name().unwrap().to_str().unwrap();
+        let profile = if profile_name == "debug" { "dev" } else { profile_name };
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../Cargo.toml");
+        let status = Command::new(env!("CARGO"))
+            .args(["build", "--quiet", "--package", "fake-uv", "--profile", profile])
+            .arg("--manifest-path")
+            .arg(&manifest)
+            .arg("--target-dir")
+            .arg(profile_dir.parent().unwrap())
+            .status()
+            .unwrap();
+        assert!(status.success(), "building the fake uv (rust/fake_uv) failed");
+        profile_dir.join(format!("fake-uv{}", std::env::consts::EXE_SUFFIX))
+    })
+}
 
 impl FakeUv {
     /// A fake `uv` whose `uv lock --upgrade` writes `lock_after_upgrade` to `uv.lock`.
@@ -49,13 +50,11 @@ impl FakeUv {
         let dir = tempfile::tempdir().unwrap();
         let bin = dir.path().join("bin");
         std::fs::create_dir(&bin).unwrap();
-        let script = bin.join("uv");
-        std::fs::write(&script, SCRIPT).unwrap();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
-        }
+        std::fs::copy(
+            fake_uv_binary(),
+            bin.join(format!("uv{}", std::env::consts::EXE_SUFFIX)),
+        )
+        .unwrap();
         std::fs::write(dir.path().join("lock_after"), lock_after_upgrade).unwrap();
         std::fs::write(dir.path().join("log"), "").unwrap();
         Self {
