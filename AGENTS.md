@@ -17,8 +17,12 @@
 
 [just](https://just.systems) is the entry point (`just` lists recipes); the poe tasks in `pyproject.toml` still work.
 
-- `just q-check`: the full gate (`prek run --all-files`, pytest, basedpyright, mypy). It must pass before committing.
-- `just q-fast`: prek hooks only, for the edit loop. `just q-test`: pytest.
+- `just q-check`: the full gate (`prek run --all-files` with `SKIP=pre-commit-update`, then pytest, basedpyright, mypy,
+  each once). It must pass before committing.
+- `just q-fast`: prek hooks only (cheap fixers and linters; basedpyright is a pre-push hook), for the edit loop.
+  `just q-test`: pytest. `just q-lint`: `ruff check --fix --unsafe-fixes` by hand; review `git diff` after.
+- Hooks: shellcheck (`shellcheck-py`, `.shellcheckrc` `enable=all`), markdownlint (`.markdownlint.yaml`), format-justfile.
+  `just dev-hooks` installs the commit and push hooks.
 - `just dev-sync`: `uv sync --all-packages`. `just rel-build`: clean `dist/` and build.
 - Prek fixers rewrite files; run the gate again until it passes.
 - Never commit the version bump of the `pre-commit-update` hook unasked.

@@ -14,7 +14,7 @@ Note: For developers, see the [dev](docs_extra/dev.md) section.
 
 You need this for both usage and development.
 
-https://docs.astral.sh/uv/getting-started/installation/
+<https://docs.astral.sh/uv/getting-started/installation/>
 
 On Windows it can be better to use `Git Bash` terminal.
 

@@ -6,6 +6,10 @@ exclude: |
     README.remotified.md
     )$
 
+# Cheap fixers and linters run on commit; basedpyright runs on push (`just dev-hooks` installs both).
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.13.5
@@ -31,12 +35,29 @@ repos:
         # Checks that all JSON files are parseable.
       - id: check-added-large-files
         # Prevent giant files from being committed.
-        args: [--maxkb=500]
+        args: [--maxkb=1024]
+      - id: check-executables-have-shebangs
+        # Executable files start with #!.
+      - id: check-shebang-scripts-are-executable
+        # Files with #! have the executable bit.
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.11.0
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    # Ships the shellcheck binary as a wheel, so no system install or Docker is needed.
+    rev: v0.11.0.1-1
     hooks:
       - id: shellcheck
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    # Structural checks only; the rules are configured in .markdownlint.yaml.
+    rev: v0.50.0
+    hooks:
+      - id: markdownlint
+
+  - repo: https://github.com/Alirex/pre-commit-just
+    # Justfile formatter.
+    rev: v0.2.1
+    hooks:
+      - id: format-justfile
 
   - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     # https://pypi.org/project/pre-commit-update/
@@ -56,19 +77,14 @@ repos:
     hooks:
       - id: ruff-check
         # Run the linter.
-        args: [--fix, --unsafe-fixes]
+        # Unsafe fixes stay out of the hooks: `just q-lint` runs them by hand.
+        args: [--fix]
       - id: ruff-format
         # Run the formatter.
 
   - repo: local
     # Hooks with local scripts.
     hooks:
-      - id: pytest
-        name: pytest
-        entry: uv run pytest
-        language: system
-        pass_filenames: false
-
       - id: generate-cli-help-simple
         # Generate CLI help.
         name: generate-cli-help-simple
@@ -86,21 +102,13 @@ repos:
         pass_filenames: false
 
       - id: basedpyright
-        # Check Python code style.
+        # Type check (slow): on push; `just q-check` runs it directly.
         name: basedpyright
+        stages: [pre-push]
         entry: uv run basedpyright
         language: system
         types: [python]
         pass_filenames: false
-        # hook will execute using a single process instead of in parallel
-        require_serial: true
-
-      - id: mypy
-        # Static type checker for Python.
-        name: mypy
-        entry: uv run mypy
-        language: system
-        types: [python]
         # hook will execute using a single process instead of in parallel
         require_serial: true
 

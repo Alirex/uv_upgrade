@@ -1,0 +1,8 @@
+# Strictest mode: every optional check on (practices/lint-strictness.md). Disable single checks only with a reason.
+enable=all
+external-sources=true
+
+# SC2310 / SC2312: "set -e is disabled in this condition" and "command masks a return value". The scripts test
+# commands on purpose (`if func`, `[[ -n "$(git status --porcelain)" ]]`, `... || continue`) and treat a failed
+# lookup as empty; splitting every substitution into a variable first would only add noise.
+disable=SC2310,SC2312
