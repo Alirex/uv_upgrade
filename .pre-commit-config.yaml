@@ -43,7 +43,7 @@ repos:
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     # Ships the shellcheck binary as a wheel, so no system install or Docker is needed.
-    rev: v0.11.0.1-1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
 
