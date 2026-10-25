@@ -26,6 +26,7 @@
 - `just q-secrets`: gitleaks over the whole history (the commit hook scans staged changes); a real hit is rotated,
   never allowlisted.
 - `just dev-sync`: `uv sync --all-packages`. `just rel-build`: clean `dist/` and build.
+  `just rel-check`, `just rel-notes`, `just rel-tag`: release.
 - Prek fixers rewrite files; run the gate again until it passes.
 - Never commit the version bump of the `pre-commit-update` hook unasked.
 
@@ -41,11 +42,20 @@
 
 ## Release
 
-Steps are in `docs_extra/dev.md` ("Bump, Build and Publish"): `uv version --bump patch`, `uv sync --all-packages`,
-`just rel-build`, then `uv publish`. **Publish to PyPI only with the maintainer's explicit OK**; `just rel-publish`
-refuses without the argument `yes`. Never bump the version unasked.
+Details in `docs_extra/dev.md` ("Release"). Releases are tag-triggered: `.github/workflows/release.yml` publishes to
+PyPI by trusted publishing and creates the GitHub release; there are no local credentials, never `uv publish`.
+
+- The maintainer has allowed releasing when there are user-visible changes since the last tag (SemVer: feature or
+  breaking = minor, fix = patch; tooling-only changes are no release). Update `CHANGELOG.md` with every
+  user-visible change.
+- Bump with `uv version --bump …` and `just dev-sync`, turn `Unreleased` into the new section, land it, wait for green
+  CI on `main`, then `just rel-tag` (`just rel-check` fails when the tag differs from the version or the changelog
+  has no section).
+- Actions are pinned by full SHA with a `# vX.Y.Z` comment; zizmor and Dependabot (7-day cooldown) keep them honest.
+- `uv` has `exclude-newer = "7 days"`: a dependency floor must not be younger than a week.
 
 ## Reasoning
 
 Shared best practices and the reasons behind these rules: <https://github.com/evocaslab/hq/tree/main/practices>
-(`quality-gate.md`, `lint-strictness.md`, `just-task-runner.md`, `gitignore-and-ide.md`).
+(`quality-gate.md`, `lint-strictness.md`, `just-task-runner.md`, `gitignore-and-ide.md`,
+`releases-and-versions.md`, `supply-chain-security.md`).
