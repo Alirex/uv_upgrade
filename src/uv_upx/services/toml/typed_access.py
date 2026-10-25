@@ -9,9 +9,11 @@ if TYPE_CHECKING:
 type TomlTable = Container | AbstractTable | OutOfOrderTableProxy
 """Any tomlkit mapping node. A table that is split in several places of a file becomes `OutOfOrderTableProxy`."""
 
-# Note: tomlkit annotates `OutOfOrderTableProxy.__getitem__` with `Any`.
-# Re-binding it with the `object` return type keeps `Any` out of the typed code.
+# Note: tomlkit annotates the `__getitem__` of its tables with `Any`.
+# Re-binding them with the `object` return type keeps `Any` out of the typed code.
 _proxy_get_item: Callable[[OutOfOrderTableProxy, str], object] = OutOfOrderTableProxy.__getitem__
+_container_get_item: Callable[[Container, str], object] = Container.__getitem__
+_table_get_item: Callable[[AbstractTable, str], object] = AbstractTable.__getitem__
 
 
 def is_table(node: object) -> bool:
@@ -27,8 +29,10 @@ def get_node(data: TomlTable, *path: str) -> object:
     """
     node: object = data
     for key in path:
-        if (isinstance(node, Container) and key in node) or (isinstance(node, AbstractTable) and key in node):
-            node = node[key]
+        if isinstance(node, Container) and key in node:
+            node = _container_get_item(node, key)
+        elif isinstance(node, AbstractTable) and key in node:
+            node = _table_get_item(node, key)
         elif isinstance(node, OutOfOrderTableProxy) and key in node:
             node = _proxy_get_item(node, key)
         else:
