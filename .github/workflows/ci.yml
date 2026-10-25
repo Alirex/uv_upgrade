@@ -24,6 +24,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --locked
+      - run: uv tool install rust-just # the justfile formatter hook needs it
       - name: Hooks
         # pre-commit-update bumps hook revisions: not a CI check.
         run: uvx prek run --all-files --show-diff-on-failure
