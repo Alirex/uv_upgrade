@@ -3,6 +3,8 @@
 `uv-upx` (PyPI; commands `uv-upx` and `uv-upgrade`) is a Typer CLI that upgrades dependency constraints in the
 `pyproject.toml` of uv projects and workspaces. Python 3.14, uv, pydantic, tomlkit.
 
+- The README is the front door: it starts with how to run the repo and is updated in the same commit as any change to a command, recipe, config key, check or layout; run its Quick start once before landing ([HQ docs-match-code](https://github.com/evocaslab/hq/blob/main/practices/docs-match-code.md#the-readme-is-the-front-door)).
+
 ## Layout
 
 - `src/uv_upx/`: the package (`cli/`, `services/`, ...). Tests sit next to the code in `tests/` folders
