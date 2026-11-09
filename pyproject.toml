@@ -195,6 +195,8 @@ runtime-evaluated-decorators = [
 [tool.basedpyright]
 typeCheckingMode = "all"
 failOnWarnings = true
+# scripts/needs.py is vendored from HQ (never edited here), so its diagnostics are not this repo's to fix.
+ignore = ["scripts/needs.py"]
 
 [tool.uv]
 # Minimum release age (HQ supply-chain practice): nothing younger than a week is locked.

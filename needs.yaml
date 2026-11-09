@@ -1,0 +1,64 @@
+# What this repo needs, by context. Schema and rules: HQ practices/needs-by-context.md.
+# Check:  scripts/needs.py lint && scripts/needs.py check --context develop
+# Render: scripts/needs.py render   (the README table between the needs markers)
+version: 1
+needs:
+  - kind: tool
+    name: uv
+    contexts: [run, develop, test, ci, release]
+    level: required
+    why: the tool runs `uv lock` and `uv sync`; it also builds, tests and runs the scripts
+    check: command
+    fix: curl -LsSf https://astral.sh/uv/install.sh | sh
+  - kind: tool
+    name: python
+    pinned_by: .python-version
+    contexts: [develop, test, ci, release]
+    level: optional
+    why: the interpreter of the dev environment
+    fallback: uv sync installs the pinned interpreter
+    check: command
+    fix: uv python install
+  - kind: tool
+    name: git
+    contexts: [develop, ci, release]
+    level: required
+    why: version control, worktrees and release tags
+    check: command
+    fix: install git
+  - kind: tool
+    name: just
+    min: "1.40"
+    contexts: [develop, ci, release]
+    level: required
+    why: every command is a recipe; rust-just is installed with uv tool in CI
+    check: command
+    fix: uv tool install rust-just
+  - kind: tool
+    name: prek
+    contexts: [develop, ci]
+    level: required
+    why: runs the quality gate hooks
+    check: command
+    fix: uv tool install prek
+  - kind: tool
+    name: node
+    contexts: [develop, ci]
+    level: required
+    why: the markdownlint hook needs Node.js on PATH
+    check: command
+    fix: install Node LTS (https://nodejs.org)
+  - kind: tool
+    name: gh
+    contexts: [develop, release]
+    level: optional
+    why: watch the release workflow and the CI runs
+    fallback: use the GitHub web UI
+    check: command
+    fix: install GitHub CLI, then gh auth login
+  - kind: network
+    contexts: [develop, test, ci, release]
+    level: required
+    why: uv fetches packages and interpreters, prek fetches hooks, pushes go to GitHub
+    check: none
+    hosts: [pypi.org, files.pythonhosted.org, github.com]

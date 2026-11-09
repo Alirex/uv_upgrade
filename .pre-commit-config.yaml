@@ -141,6 +141,14 @@ repos:
         # hook will execute using a single process instead of in parallel
         require_serial: true
 
+      - id: needs-fresh
+        # needs.yaml lints, matches the ci workflows, and the README table is current (README.remotified.md follows).
+        name: needs.yaml is current
+        entry: bash -c 'scripts/needs.py lint && scripts/needs.py ci && scripts/needs.py render --check'
+        language: system
+        files: ^(needs\.yaml|README\.md|\.github/workflows/.*|scripts/needs\.py|\.python-version)$
+        pass_filenames: false
+
       - id: mdremotifier
         #
         name: mdremotifier
