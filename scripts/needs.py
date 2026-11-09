@@ -482,10 +482,9 @@ def render_readme_table(needs: list[Need]) -> str:
     for need in needs:
         part = f" ({need.part})" if need.part else ""
         where = f" [{', '.join(need.oses)}]" if need.oses else ""
-        lines.append(
-            f"| `{cell(need.label)}` ({need.kind}) | {', '.join(need.contexts)}{part}{where} "
-            f"| {need.level} | {cell(need.why)} |",
-        )
+        name = f"`{cell(need.label)}` ({need.kind})"
+        contexts = f"{', '.join(need.contexts)}{part}{where}"
+        lines.append(f"| {name} | {contexts} | {need.level} | {cell(need.why)} |")
     return "\n".join(lines)
 
 
