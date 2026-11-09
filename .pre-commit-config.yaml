@@ -12,7 +12,7 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.5
+    rev: 0.13.6
     hooks:
       - id: uv-lock
 
@@ -43,7 +43,7 @@ repos:
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     # Ships the shellcheck binary as a wheel, so no system install or Docker is needed.
-    rev: v0.11.0.1-1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
 
@@ -55,7 +55,7 @@ repos:
 
   - repo: https://github.com/Alirex/pre-commit-just
     # Justfile formatter.
-    rev: v0.2.1
+    rev: v0.2.2
     hooks:
       - id: format-justfile
 
@@ -93,7 +93,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.17.2
+    rev: v0.17.3
     hooks:
       - id: ruff-check
         # Run the linter.
