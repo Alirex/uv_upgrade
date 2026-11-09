@@ -16,6 +16,8 @@ It is deliberately self-contained (standard library and pyyaml, no HQ import) so
 for the same reason it uses argparse and not Typer, which HQ's other scripts use.
 """
 
+# pyright: reportMissingModuleSource=false
+# (pyyaml comes from the inline script block above; a repo's own environment need not have it installed)
 from __future__ import annotations
 
 import argparse
@@ -323,7 +325,8 @@ class Row:
 def run_quiet(argv: list[str], timeout: float = 5) -> str | None:
     """Return the output of a command, or None when it fails, is missing or times out."""
     try:
-        done = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, check=False)
+        # argv is built from the repo's own needs.yaml, never a shell string.
+        done = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, check=False)  # noqa: S603
     except OSError:
         return None
     except subprocess.SubprocessError:
@@ -571,7 +574,7 @@ def workflow_runs(root: Path) -> list[str] | None:
     runs: list[str] = []
     for file in files:
         try:
-            data = cast("object", yaml.safe_load(file.read_text(encoding="utf-8")))
+            data = cast("object", yaml.safe_load(file.read_text(encoding="utf-8")))  # pyyaml's stub returns Any
         except OSError:
             continue
         except yaml.YAMLError:
@@ -650,21 +653,31 @@ class Args(argparse.Namespace):
     setup_check: str = ""
 
 
+def out(text: str) -> None:
+    """Write one line to stdout (the CLI's output; `print` is banned by the repos' lint rules)."""
+    _ = sys.stdout.write(text + "\n")
+
+
+def err(text: str) -> None:
+    """Write one line to stderr."""
+    _ = sys.stderr.write(text + "\n")
+
+
 def command_check(args: Args) -> int:
     """Run `check`."""
     needs, problems = load_needs(args.root)
     if problems:
-        print("\n".join(problems), file=sys.stderr)
+        err("\n".join(problems))
         return 2
     rows = check_needs(needs, args.root, args.context, args.part, network=args.network)
     if args.json:
-        print(json.dumps([asdict(row) for row in rows], indent=2))
+        out(json.dumps([asdict(row) for row in rows], indent=2))
     else:
-        print(f"== needs: context {args.context}{' part ' + args.part if args.part else ''} ({args.root})")
+        out(f"== needs: context {args.context}{' part ' + args.part if args.part else ''} ({args.root})")
         for row in rows:
-            print(f"{row.state:5} {row.name}{' (' + row.part + ')' if row.part else ''} - {row.detail}")
+            out(f"{row.state:5} {row.name}{' (' + row.part + ')' if row.part else ''} - {row.detail}")
         misses = sum(1 for row in rows if row.state == "MISS")
-        print(f"{len(rows)} needs, {misses} missing" if rows else f"no needs declared for {args.context}")
+        out(f"{len(rows)} needs, {misses} missing" if rows else f"no needs declared for {args.context}")
     return 1 if any(row.state == "MISS" for row in rows) else 0
 
 
@@ -672,21 +685,21 @@ def command_render(args: Args) -> int:
     """Run `render`."""
     needs, problems = load_needs(args.root)
     if problems:
-        print("\n".join(problems), file=sys.stderr)
+        err("\n".join(problems))
         return 2
     if args.check:
         bad = generated_problems(args.root)
-        print("\n".join(bad) if bad else "generated blocks are current")
+        out("\n".join(bad) if bad else "generated blocks are current")
         return 1 if bad else 0
     for name, state in render(args.root, needs, args.setup_check, write=True):
-        print(f"{state:8} {name}")
+        out(f"{state:8} {name}")
     return 0
 
 
 def command_lint(args: Args) -> int:
     """Run `lint`."""
     problems = lint(args.root)
-    print("\n".join(problems) if problems else f"{NEEDS_FILE}: ok")
+    out("\n".join(problems) if problems else f"{NEEDS_FILE}: ok")
     return 1 if problems else 0
 
 
@@ -694,13 +707,13 @@ def command_ci(args: Args) -> int:
     """Run `ci`."""
     needs, problems = load_needs(args.root)
     if problems:
-        print("\n".join(problems), file=sys.stderr)
+        err("\n".join(problems))
         return 2
     found = ci_problems(args.root, needs)
     if found is None:
-        print("n.a.: no active workflow in .github/workflows")
+        out("n.a.: no active workflow in .github/workflows")
         return 0
-    print("\n".join(found) if found else "workflows match the ci needs")
+    out("\n".join(found) if found else "workflows match the ci needs")
     return 1 if found else 0
 
 
