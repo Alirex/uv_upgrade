@@ -41,6 +41,8 @@ dev = [
     # [typing]-[END]
     # [testing]-[BEGIN]
     "pytest>=9.0.2",
+    # Property-based tests (version parsing, dependency rewriting)
+    "hypothesis>=6.140",
     "pytest-benchmark>=5.2.3",
     # Coverage gate
     "pytest-cov>=7.0.0",
