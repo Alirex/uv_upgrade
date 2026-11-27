@@ -202,3 +202,6 @@ failOnWarnings = true
 [tool.uv]
 # Minimum release age (HQ supply-chain practice): nothing younger than a week is locked.
 exclude-newer = "7 days"
+# mdremotifier 1.0.0 (dev only, last release 2024) pins soupsieve<3; soupsieve below 4.0 has three DoS advisories
+# (GHSA-6655-6qjp-jx7x, GHSA-7g44-g9rc-x53w, GHSA-mmhr-3c5m-f64f). Drop this once mdremotifier allows 4.x.
+override-dependencies = ["soupsieve>=4"]
