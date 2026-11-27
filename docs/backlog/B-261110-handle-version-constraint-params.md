@@ -1,3 +1,10 @@
+---
+id: B-261110-handle-version-constraint-params
+status: todo
+requested: 2026-11-10
+size: s
+---
+
 # handle_version_constraint: logging-only parameters and complexity
 
 Smell scan 2026-11-10 (radon C 11; `verbose` and `dependency` exist only to log: a flag argument plus a data clump) at
