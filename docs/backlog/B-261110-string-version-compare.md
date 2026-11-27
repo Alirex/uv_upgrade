@@ -1,3 +1,10 @@
+---
+id: B-261110-string-version-compare
+status: todo
+requested: 2026-11-10
+size: s
+---
+
 # Versions are compared as strings
 
 `update_dependency.py:84,96`: `version_constraint.version != version_new` compares text, so `1.0` vs `1.0.0` counts as
