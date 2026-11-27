@@ -1,3 +1,10 @@
+---
+id: B-261117-rust-port-branch
+status: design
+requested: 2026-11-17
+size: m
+---
+
 # Finish or drop the Rust port branch
 
 Found in the loose-ends round of 2026-11-17. The branch `feat/rust-port-followups` (pushed, tip `d1b5731`, 3 weeks old,
