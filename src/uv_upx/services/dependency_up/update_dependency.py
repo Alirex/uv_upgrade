@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from uv_upx.services.dependency_up.constants.operators import (
     VERSION_OPERATOR_I_GREATER_OR_EQUAL,
-    VERSION_OPERATORS_I_EXPLICIT_IGNORE,
     VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE,
     VERSION_OPERATORS_I_PUT_IF_DIFFERENT,
 )
@@ -97,36 +96,19 @@ def handle_version_constraint(
     version_new: Version,
     #
     profile: UpgradeProfile = UpgradeProfile.DEFAULT,
-    #
-    verbose: bool = False,
-    dependency: object | None = None,
 ) -> IsHasChanges:
     """Handle a single version constraint.
 
     Change it in-place. Because, for now, it is simpler than rebuilding the whole object.
+    Operators other than `>=` (and `==` with the pinned profile) are left alone
+    (`VERSION_OPERATORS_I_EXPLICIT_IGNORE` lists the known ones).
     """
-    logger = logging.getLogger(__name__)
+    is_changeable = version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT or (
+        profile is UpgradeProfile.WITH_PINNED
+        and version_constraint.operator in VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE
+    )
+    if not is_changeable or is_same_version(version_constraint.version, version_new):
+        return False
 
-    is_has_changes = False
-    if version_constraint.operator in VERSION_OPERATORS_I_PUT_IF_DIFFERENT:
-        if not is_same_version(version_constraint.version, version_new):
-            version_constraint.version = version_new
-            is_has_changes = True
-
-    elif (profile is UpgradeProfile.WITH_PINNED) and (
-        version_constraint.operator in VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE
-    ):
-        # sourcery skip: hoist-similar-statement-from-if, hoist-statement-from-if
-        if not is_same_version(version_constraint.version, version_new):
-            version_constraint.version = version_new
-            is_has_changes = True
-
-    elif version_constraint.operator in VERSION_OPERATORS_I_EXPLICIT_IGNORE:
-        if verbose and dependency:
-            msg = f"Explicitly ignoring version constraint {version_constraint}. Dependency: {dependency}"
-            logger.info(msg)
-    elif verbose and dependency:
-        msg = f"Operator {version_constraint.operator} is not supported yet. Skip. Dependency: {dependency}"
-        logger.warning(msg)
-
-    return is_has_changes
+    version_constraint.version = version_new
+    return True
