@@ -51,7 +51,7 @@ rel-build:
     find dist -type f -not -name '.gitignore' -delete
     uv build
 
-# Fail unless the tag (default: `v<version>`) equals the pyproject version and the changelog has its section.
+# Fail unless tag = pyproject version, the changelog has its section and the PyPI readme passes its checks.
 [group('release')]
 rel-check tag="":
     #!/usr/bin/env bash
@@ -67,6 +67,15 @@ rel-check tag="":
         echo "CHANGELOG.md has no section '## [$version]'" >&2
         exit 1
     fi
+    scripts/readme-remotified.sh check
+    if grep -qE 'uv_upgrade/(blob/)?main/' README.remotified.md; then
+        echo "README.remotified.md links to main, not $tag: run the gate to regenerate it" >&2
+        exit 1
+    fi
+    out="$(mktemp -d)"
+    trap 'rm -rf "$out"' EXIT
+    uv build -q --out-dir "$out"
+    uvx --from 'twine==6.2.0' twine check --strict "$out"/*
     echo "OK: $tag"
 
 # Print the changelog section of a version (the GitHub release notes).
