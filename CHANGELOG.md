@@ -8,6 +8,8 @@ versions: [SemVer](https://semver.org/) (breaking or new feature = minor while `
 ### Changed
 
 - Dependencies upgraded (`uv lock --upgrade`); nothing in the CLI changed.
+- README: a before/after example on the first screen, badges, one H1; the behaviour notes moved to
+  `docs_extra/behaviour.md`. The PyPI page links to the files of its release tag, not `main`.
 
 ### Fixed
 
