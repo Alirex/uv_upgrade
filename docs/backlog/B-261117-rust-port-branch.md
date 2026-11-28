@@ -1,6 +1,8 @@
 ---
 id: B-261117-rust-port-branch
-status: design
+status: blocked
+ready: false
+blocked_by: uv_upgrade#21
 requested: 2026-11-17
 size: m
 ---
@@ -18,3 +20,8 @@ AGENTS.md says a started Rust rewrite lives on `features/rust` and must not be m
 (merge `origin/main`, run `just q-check`, follow the switch-over checklist) or close it.
 
 Done when: the branch is landed or deleted (with the maintainer's OK) and this file is deleted.
+
+## Progress
+
+2026-11-28: parked; asked the maintainer in <https://github.com/Alirex/uv_upgrade/issues/21> (continue side by side,
+park, or drop; all hard to undo, so no default taken).
