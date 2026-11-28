@@ -53,3 +53,28 @@ def test_handle_version_constraint(
         version_new=Version(version_new),
     )
     assert str(version_constraint) == expected
+
+
+@pytest.mark.parametrize(
+    ("version_constraint", "version_new", "expected", "expected_changed"),
+    [
+        (VersionConstraint(operator=">=", version="1.0"), "1.0.0", ">=1.0", False),
+        (VersionConstraint(operator=">=", version="1.0.0"), "1.0", ">=1.0.0", False),
+        (VersionConstraint(operator=">=", version="1.01"), "1.1", ">=1.01", False),
+        (VersionConstraint(operator=">=", version="1.0"), "1.0.1", ">=1.0.1", True),
+        (VersionConstraint(operator=">=", version="1.0"), "1.0.0rc1", ">=1.0.0rc1", True),
+        (VersionConstraint(operator=">=", version="1.2.3"), "1.2.3+cpu", ">=1.2.3+cpu", True),
+    ],
+)
+def test_handle_version_constraint_equal_versions_keep_the_text(
+    version_constraint: VersionConstraint,
+    version_new: str,
+    expected: str,
+    expected_changed: bool,  # noqa: FBT001
+) -> None:
+    """Versions equal by their release numbers (`1.0`, `1.0.0`) are no change (B-261110-string-version-compare)."""
+    changed = handle_version_constraint(
+        version_constraint=version_constraint,
+        version_new=Version(version_new),
+    )
+    assert (str(version_constraint), changed) == (expected, expected_changed)

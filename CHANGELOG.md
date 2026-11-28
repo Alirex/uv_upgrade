@@ -9,6 +9,10 @@ versions: [SemVer](https://semver.org/) (breaking or new feature = minor while `
 
 - Dependencies upgraded (`uv lock --upgrade`); nothing in the CLI changed.
 
+### Fixed
+
+- A constraint equal to the locked version by its numbers (`>=1.0` with `1.0.0` locked) is no longer rewritten.
+
 ## [0.5.0] - 2026-10-25
 
 ### Added
