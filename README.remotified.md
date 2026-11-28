@@ -115,6 +115,18 @@ uv-upx --install-completion
 
 Note: relatively safe to run multiple times. It just adds extra newlines to your shell config when run multiple times.
 
+## Use with AI agents
+
+The repo ships one agent skill, [skills/uv-upx/SKILL.md](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/skills/uv-upx/SKILL.md): which command to run for which goal
+and how to check the result. It runs no scripts and fetches nothing. Copy the `skills/uv-upx` folder into your agent's
+skills directory (for Claude Code, `.claude/skills/`) to use it. There is no JSON output yet: an agent reads the exit
+code and `git diff`. The rules for agents that change this repo are in [AGENTS.md](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/AGENTS.md); the design is in
+[ARCHITECTURE.md](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/ARCHITECTURE.md).
+
+## License
+
+MIT, see [LICENSE.txt](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/LICENSE.txt). The brand artwork in `brand/` is CC-BY-4.0 ([brand book](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/docs/brand.md)).
+
 ## Dev
 
 [Dev](https://github.com/Alirex/uv_upgrade/blob/v0.5.0/docs_extra/dev.md): setup, the gate (`just q-check`) and the release.

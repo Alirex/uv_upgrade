@@ -1,0 +1,62 @@
+# Brand source of truth for uv-upx. Checked with `brandforge check .` (nothing is built yet).
+# Prose: ../docs/brand.md. The display name lives only here (`name`).
+schema: 1
+languages:
+  - { code: en, label: EN, name: English }
+default_language: en
+name:
+  en: uv-upx
+tagline:
+  en: "Constraints that follow the lock."
+mission:
+  en: "Raise the dependency constraints in pyproject.toml to the versions uv locks, and keep the file as written."
+vision:
+  en: "Upgrading a uv project's floors is one command, with nothing to undo by hand when it fails."
+roles:
+  paper: { light: "#FFFFFF", dark: "#0F1612", meaning: { en: Page background } }
+  ink:
+    {
+      light: "#132019",
+      dark: "#E6EFE9",
+      meaning: { en: Body text and the mark },
+    }
+  muted: { light: "#4A5A50", dark: "#A8B8AE", meaning: { en: Secondary text } }
+  primary:
+    {
+      light: "#1E6B45",
+      dark: "#7CCFA2",
+      meaning: { en: "The one accent: links and the mark's dot" },
+    }
+  on-primary:
+    { light: "#FFFFFF", dark: "#0F1612", meaning: { en: Text on the accent } }
+  focus:
+    { light: "#132019", dark: "#E6EFE9", meaning: { en: Keyboard focus ring } }
+pairs:
+  - { fg: ink, bg: paper, kind: text, level: aaa, use: Body text }
+  - { fg: muted, bg: paper, kind: text, level: aa, use: Secondary text }
+  - { fg: primary, bg: paper, kind: text, level: aa, use: Links }
+  - {
+      fg: on-primary,
+      bg: primary,
+      kind: text,
+      level: aa,
+      use: Label on the accent,
+    }
+  - { fg: focus, bg: paper, kind: ui, level: aa, use: Focus ring }
+fonts:
+  mono:
+    family: JetBrains Mono
+    fallback: [ui-monospace, SFMono-Regular, Menlo, Consolas, monospace]
+    license: OFL-1.1
+    note: The name and code samples; the project is a developer tool.
+assets:
+  - { id: mark, form: mark, path: masters/mark.svg, label: { en: Mark } }
+  - {
+      id: small-mark,
+      form: small-mark,
+      path: masters/small-mark.svg,
+      label: { en: Small mark (16 to 24 px) },
+    }
+legal:
+  owner: Alirex
+  artwork_license: CC-BY-4.0

@@ -1,0 +1,21 @@
+# The repo dossier: which documents explain this repo. Checked by `dossier check`.
+# Each part: `present` with its paths, or `exempt` with a reason.
+schema: 1
+kind: cli
+parts:
+  identity:
+    present: [brand/brand.yaml, docs/brand.md]
+  purpose:
+    present: [README.md]
+  reasoning:
+    present: [docs/decisions/]
+  design:
+    present: [ARCHITECTURE.md, docs/user-stories.md]
+  contract:
+    present: [README.md, CHANGELOG.md]
+  trust:
+    present: [LICENSE.txt, SECURITY.md]
+  help:
+    exempt: one maintainer; how to change the repo is in the README and AGENTS.md
+  agents:
+    present: [AGENTS.md, skills/uv-upx/SKILL.md]

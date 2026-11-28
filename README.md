@@ -115,6 +115,18 @@ uv-upx --install-completion
 
 Note: relatively safe to run multiple times. It just adds extra newlines to your shell config when run multiple times.
 
+## Use with AI agents
+
+The repo ships one agent skill, [skills/uv-upx/SKILL.md](skills/uv-upx/SKILL.md): which command to run for which goal
+and how to check the result. It runs no scripts and fetches nothing. Copy the `skills/uv-upx` folder into your agent's
+skills directory (for Claude Code, `.claude/skills/`) to use it. There is no JSON output yet: an agent reads the exit
+code and `git diff`. The rules for agents that change this repo are in [AGENTS.md](AGENTS.md); the design is in
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
+## License
+
+MIT, see [LICENSE.txt](LICENSE.txt). The brand artwork in `brand/` is CC-BY-4.0 ([brand book](docs/brand.md)).
+
 ## Dev
 
 [Dev](docs_extra/dev.md): setup, the gate (`just q-check`) and the release.
