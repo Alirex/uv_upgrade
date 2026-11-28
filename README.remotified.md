@@ -20,7 +20,9 @@ On Windows it can be better to use `Git Bash` terminal.
 
 ```bash
 if ! command -v uv &> /dev/null; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh;
+    # Download, read, then run (no pipe into a shell).
+    curl -LsSf -o uv-install.sh https://astral.sh/uv/install.sh
+    sh uv-install.sh && rm uv-install.sh
 else
     uv self update;
 fi
