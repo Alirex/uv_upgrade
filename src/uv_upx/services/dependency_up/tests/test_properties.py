@@ -36,6 +36,12 @@ def _render(name: str, extra: list[str], constraint: list[tuple[str, str]], mark
     return f"{name}{extras_part}{spec}{marker_part}"
 
 
+def _numbers(version: str) -> list[int]:
+    """Release numbers padded to 4 parts, so `1.0` and `1.0.0` match: the test's own oracle."""
+    parts = [int(part) for part in version.split(".")]
+    return parts + [0] * (4 - len(parts))
+
+
 @given(names, extras, constraints, markers)
 def test_parse_round_trip(
     name: str,
@@ -87,7 +93,9 @@ def test_update_only_touches_lower_bounds(  # noqa: PLR0913, PLR0917
     )
 
     changeable = {">=", "=="} if profile is UpgradeProfile.WITH_PINNED else {">="}
-    expected = [(op, locked if op in changeable else ver) for op, ver in constraint] or [(">=", locked)]
+    expected = [
+        (op, locked if op in changeable and _numbers(ver) != _numbers(locked) else ver) for op, ver in constraint
+    ] or [(">=", locked)]
     assert [(vc.operator, vc.version) for vc in parsed.version_constraints] == expected
     assert parsed.extras == extra
     assert parsed.marker == marker
