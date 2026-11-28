@@ -1,5 +1,6 @@
 import copy
 import logging
+import re
 from typing import TYPE_CHECKING
 
 from uv_upx.services.dependency_up.constants.operators import (
@@ -66,6 +67,28 @@ def update_dependency_v2(
 
 type IsHasChanges = bool
 
+_RELEASE_ONLY = re.compile(r"\d+(\.\d+)*")
+
+
+def is_same_version(current: str, new: str) -> bool:
+    """Tell whether two versions are equal, ignoring trailing zeros and leading zeros of the release numbers.
+
+    `1.0` equals `1.0.0` and `1.01` equals `1.1` (PEP 440). A version with any other segment (pre-release,
+    post-release, local, epoch) is compared as text, which may report a change that is none, never the reverse.
+    """
+    if current == new:
+        return True
+    if not (_RELEASE_ONLY.fullmatch(current) and _RELEASE_ONLY.fullmatch(new)):
+        return False
+    return _release_key(current) == _release_key(new)
+
+
+def _release_key(version: str) -> tuple[int, ...]:
+    parts = [int(part) for part in version.split(".")]
+    while len(parts) > 1 and parts[-1] == 0:
+        _ = parts.pop()
+    return tuple(parts)
+
 
 def handle_version_constraint(
     *,
@@ -84,8 +107,7 @@ def handle_version_constraint(
         profile is UpgradeProfile.WITH_PINNED
         and version_constraint.operator in VERSION_OPERATORS_I_PINNED_ALLOWED_TO_CHANGE
     )
-    # TODO: (?) Implement better version comparison logic here
-    if not is_changeable or version_constraint.version == version_new:
+    if not is_changeable or is_same_version(version_constraint.version, version_new):
         return False
 
     version_constraint.version = version_new
