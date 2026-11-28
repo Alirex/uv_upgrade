@@ -146,3 +146,10 @@ One-time setup (PyPI, by the maintainer): trusted publisher for project `uv-upx`
 
 `README.remotified.md` (the PyPI readme, `readme` in `pyproject.toml`) is generated from `README.md` by the
 `mdremotifier` prek hook, which `just q-check` and CI run with `--all-files`; commit it with README changes.
+`scripts/readme-remotified.sh build` pins its links to the tag of the pyproject version (`blob/vX.Y.Z/`), so the PyPI
+page of a release opens that release's files; between releases they point at the last tag (a file added since then
+opens only after the next bump, which regenerates the links). `just rel-check` fails on a link that is not absolute,
+on a link to `main`, and on `twine check --strict` of a fresh build.
+
+Its upstream "Linux-like environment" note is about `pexpect` in mdremotifier's own dev tests, not the CLI used here;
+the hook script itself needs bash (Git Bash or WSL on Windows).
