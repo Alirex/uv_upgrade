@@ -6,7 +6,9 @@
 
 ```bash
 if ! command -v uv &> /dev/null; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh;
+    # Download, read, then run (no pipe into a shell).
+    curl -LsSf -o uv-install.sh https://astral.sh/uv/install.sh
+    sh uv-install.sh && rm uv-install.sh
 else
     uv self update;
 fi
@@ -34,16 +36,13 @@ Needed for automatic linting.
 
 ```shell
 if ! command -v prek &> /dev/null; then
-    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/v0.2.19/prek-installer.sh | sh &&\
-    prek self update
+    uv tool install prek
 else
-    prek self update
+    uv tool upgrade prek
 fi
 
 prek --version
 ```
-
-Note: Run with self-update for installing the latest version of prek. Maybe they will provide a better script later.
 
 ## Task runner
 
